@@ -10,33 +10,58 @@
         body { -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 9999px; }
+        
+        /* Голографический эффект для карточек */
+        .holo-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .holo-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                0deg,
+                transparent 0%,
+                rgba(236, 72, 153, 0.05) 30%,
+                rgba(168, 85, 247, 0.1) 50%,
+                rgba(59, 130, 246, 0.05) 70%,
+                transparent 100%
+            );
+            transform: rotate(30deg);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-purple-500 selection:text-white font-sans antialiased">
 
     <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 p-4 flex justify-between items-center shadow-lg">
         <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-400 via-pink-400 to-amber-300 flex items-center justify-center text-base shadow">✨</div>
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-500 via-pink-500 to-amber-400 flex items-center justify-center text-base shadow-lg shadow-purple-500/30">✨</div>
             <div>
-                <h1 class="text-base font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent leading-tight">CYBER STICKERS</h1>
-                <p class="text-[11px] text-slate-400">>10 паков · 160+ стикеров Telegram</p>
+                <h1 class="text-base font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent leading-tight">CYBER CARDS</h1>
+                <p class="text-[11px] text-slate-400">20 коллекционных паков</p>
             </div>
         </div>
-        <button id="cart-btn" class="relative bg-slate-900/90 hover:bg-slate-700 border border-slate-700 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500">
+        <button id="cart-btn" class="relative bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 px-3.5 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500 shadow-inner">
             <span class="text-xl">🛒</span>
-            <span id="cart-count" class="absolute -top-2 -right-2 bg-pink-500 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-md">0</span>
+            <span id="cart-count" class="absolute -top-2 -right-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-md">0</span>
         </button>
     </header>
 
     <main class="p-4 max-w-md mx-auto flex-1 w-full pb-20 space-y-4">
         <div class="relative">
-            <input id="search-input" type="text" placeholder="Найдите стикерпаки..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 pl-11 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-purple-500 transition shadow-sm">
+            <input id="search-input" type="text" placeholder="Поиск редких стикеров..." class="w-full bg-slate-900/90 border border-slate-800 rounded-xl px-4 py-3 pl-11 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-purple-500 transition shadow-sm">
             <span class="absolute left-4 top-3.5 text-slate-500">🔍</span>
         </div>
 
         <div class="flex justify-between items-center px-1">
-            <h2 class="text-sm font-semibold text-slate-200 uppercase tracking-wide">Каталог стикеров</h2>
-            <span class="text-xs text-amber-400 font-semibold bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">40-60 ⭐</span>
+            <h2 class="text-sm font-semibold text-slate-200 uppercase tracking-wide">Коллекция карт</h2>
+            <span class="text-xs text-amber-400 font-semibold bg-amber-400/10 px-2.5 py-1 rounded-md border border-amber-400/20">⭐ 40 - 80 Stars</span>
         </div>
 
         <div id="products-grid" class="grid grid-cols-2 gap-3.5"></div>
@@ -47,9 +72,9 @@
             <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-800">
                 <div class="flex items-center gap-2">
                     <span class="text-lg">🛒</span>
-                    <h3 class="font-bold text-base text-white">Ваша корзина</h3>
+                    <h3 class="font-bold text-base text-white">Корзина коллекционера</h3>
                 </div>
-                <button id="close-cart" class="text-slate-400 hover:text-white transition focus:outline-none">✕</button>
+                <button id="close-cart" class="text-slate-400 hover:text-white transition focus:outline-none text-lg">✕</button>
             </div>
             
             <div id="cart-items" class="flex-1 overflow-y-auto space-y-2.5 mb-4 pr-1"></div>
@@ -59,7 +84,7 @@
                     <span class="text-slate-300">Итого:</span>
                     <span id="cart-total" class="text-amber-300 font-bold text-base">0 ⭐</span>
                 </div>
-                <button id="checkout-btn" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-95 py-3.5 rounded-xl font-semibold shadow-lg shadow-purple-900/20 transition focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900">
+                <button id="checkout-btn" class="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:opacity-95 py-3.5 rounded-xl font-semibold shadow-lg shadow-purple-900/30 transition focus:outline-none focus:ring-2 focus:ring-purple-500">
                     Оплатить заказ
                 </button>
             </div>
@@ -77,16 +102,26 @@
         }
 
         const products = [
-            { id: 1, name: 'Cyber Cat Pack', ru: 'Кибер-Кот 2077', price: 50, emoji: '🐱' },
-            { id: 2, name: 'Crypto Pepe', ru: 'Крипто Пепе Девен', price: 50, emoji: '🐸' },
-            { id: 3, name: 'Capybara Zen', ru: 'Капибара Дзен', price: 45, emoji: '🍊' },
-            { id: 4, name: 'Coffee & Deadline', ru: 'Кофеман & Дедлайн', price: 40, emoji: '☕' },
-            { id: 5, name: 'Retro Arcade 8-Bit', ru: 'Ретро Геймер', price: 45, emoji: '🕹️' },
-            { id: 6, name: 'Cyber Samurai', ru: 'Кибер Самурай', price: 60, emoji: '⚔️' },
-            { id: 7, name: 'Anime Vibes', ru: 'Аниме & Чиби', price: 60, emoji: '🌸' },
-            { id: 8, name: 'Pixel Ducks', ru: 'Пиксельные Утки', price: 40, emoji: '🦆' },
-            { id: 9, name: 'Space Hamster', ru: 'Космо-Хомяк Гагарин', price: 45, emoji: '🚀' },
-            { id: 10, name: 'Neon Shiba', ru: 'Неоновый Сиба Доге', price: 55, emoji: '🐶' }
+            { id: 1, name: 'Cyber Cat X', ru: 'Кибер-Кот Голо', price: 50, emoji: '🐱', rarity: 'HOLO RARE' },
+            { id: 2, name: 'Crypto Pepe V', ru: 'Крипто Пепе EX', price: 55, emoji: '🐸', rarity: 'ULTRA RARE' },
+            { id: 3, name: 'Zen Capybara', ru: 'Капибара Дзен', price: 45, emoji: '🍊', rarity: 'RARE' },
+            { id: 4, name: 'Cyber Samurai', ru: 'Кибер Самурай', price: 70, emoji: '⚔️', rarity: 'SECRET' },
+            { id: 5, name: 'Neon Shiba', ru: 'Неоновый Сиба', price: 60, emoji: '🐶', rarity: 'HOLO RARE' },
+            { id: 6, name: 'Retro Arcade', ru: 'Ретро Геймер 8-Bit', price: 45, emoji: '🕹️', rarity: 'RARE' },
+            { id: 7, name: 'Coffee Deadline', ru: 'Кофеман & Дедлайн', price: 40, emoji: '☕', rarity: 'COMMON' },
+            { id: 8, name: 'Anime Chibi', ru: 'Аниме Девочка', price: 65, emoji: '🌸', rarity: 'ULTRA RARE' },
+            { id: 9, name: 'Pixel Duck', ru: 'Пиксельная Утка', price: 40, emoji: '🦆', rarity: 'COMMON' },
+            { id: 10, name: 'Space Hamster', ru: 'Космо-Хомяк', price: 50, emoji: '🚀', rarity: 'HOLO RARE' },
+            { id: 11, name: 'Quantum Fox', ru: 'Квантовый Лис', price: 75, emoji: '🦊', rarity: 'SECRET' },
+            { id: 12, name: 'Laser Dragon', ru: 'Лазерный Дракон', price: 80, emoji: '🐉', rarity: 'SECRET' },
+            { id: 13, name: 'Matrix Hacker', ru: 'Матричный Хакер', price: 65, emoji: '💻', rarity: 'ULTRA RARE' },
+            { id: 14, name: 'Electro Panda', ru: 'Электро Панда', price: 55, emoji: '🐼', rarity: 'HOLO RARE' },
+            { id: 15, name: 'Mecha Phoenix', ru: 'Меха Феникс', price: 80, emoji: '🔥', rarity: 'SECRET' },
+            { id: 16, name: 'Street Punk', ru: 'Стрит Панк', price: 50, emoji: '🎸', rarity: 'RARE' },
+            { id: 17, name: 'Android Glitch', ru: 'Андроид Глитч', price: 55, emoji: '⚡', rarity: 'HOLO RARE' },
+            { id: 18, name: 'Dark Wizard', ru: 'Тёмный Маг 2077', price: 70, emoji: '🔮', rarity: 'ULTRA RARE' },
+            { id: 19, name: 'Holobot V1', ru: 'Голобот V1', price: 45, emoji: '🤖', rarity: 'RARE' },
+            { id: 20, name: 'Neon Skull', ru: 'Неоновый Череп', price: 60, emoji: '💀', rarity: 'ULTRA RARE' }
         ];
 
         let cart = [];
@@ -97,118 +132,5 @@
             grid.innerHTML = '';
             
             items.forEach(p => {
-                grid.innerHTML += `
-                    <div class="bg-slate-900/90 border border-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-purple-900/10 transition flex flex-col">
-                        <div class="w-full h-28 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-700 flex items-center justify-center p-3 text-5xl drop-shadow-lg">
-                            ${p.emoji}
-                        </div>
-                        <div class="p-3.5 flex flex-col flex-1">
-                            <h3 class="font-semibold text-xs text-slate-100 truncate">${p.name}</h3>
-                            <p class="text-[11px] text-slate-400 truncate">${p.ru}</p>
-                            <div class="flex justify-between items-center mt-auto pt-3 border-t border-slate-800">
-                                <span class="text-amber-400 font-bold text-xs">⭐ ${p.price}</span>
-                                <button onclick="addToCart(${p.id})" class="bg-purple-600 hover:bg-purple-500 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-white transition focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900">
-                                    В корзину
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function addToCart(id) {
-            triggerHaptic('light');
-            const prod = products.find(p => p.id === id);
-            if (!prod) return;
-            
-            const item = cart.find(i => i.id === id);
-            if (item) {
-                item.quantity++;
-            } else {
-                cart.push({ ...prod, quantity: 1 });
-            }
-            updateCart();
-            triggerHaptic('medium');
-        }
-
-        function changeQty(id, delta) {
-            triggerHaptic('light');
-            const item = cart.find(i => i.id === id);
-            if (!item) return;
-            
-            item.quantity += delta;
-            if (item.quantity <= 0) {
-                cart = cart.filter(i => i.id !== id);
-            }
-            updateCart();
-        }
-
-        function updateCart() {
-            const count = cart.reduce((s, i) => s + i.quantity, 0);
-            document.getElementById('cart-count').innerText = count;
-            
-            const cont = document.getElementById('cart-items');
-            cont.innerHTML = cart.length === 0 ? '<p class="text-center text-slate-500 text-xs py-8">Корзина пуста 🛒</p>' : '';
-            
-            cart.forEach(i => {
-                cont.innerHTML += `
-                    <div class="flex justify-between items-center bg-slate-950/50 p-2.5 rounded-xl border border-slate-800">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-xl">
-                                ${i.emoji}
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-medium text-white truncate max-w-[120px]">${i.name}</h4>
-                                <p class="text-[11px] text-amber-400 font-semibold">⭐ ${i.price} × ${i.quantity}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="changeQty(${i.id}, -1)" class="w-6 h-6 rounded-lg bg-slate-800 text-slate-400 hover:text-white">-</button>
-                            <span class="text-sm font-semibold w-6 text-center">${i.quantity}</span>
-                            <button onclick="changeQty(${i.id}, 1)" class="w-6 h-6 rounded-lg bg-purple-600 text-white">+</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            const total = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-            document.getElementById('cart-total').innerText = `${total} ⭐`;
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderProducts();
-            
-            const modal = document.getElementById('cart-modal');
-            document.getElementById('cart-btn').addEventListener('click', () => { 
-                triggerHaptic('light'); 
-                modal.classList.remove('hidden'); 
-            });
-            document.getElementById('close-cart').addEventListener('click', () => { 
-                triggerHaptic('light'); 
-                modal.classList.add('hidden'); 
-            });
-
-            document.getElementById('search-input').addEventListener('input', (e) => {
-                const q = e.target.value.toLowerCase();
-                const filtered = products.filter(p => p.name.toLowerCase().includes(q) || p.ru.toLowerCase().includes(q));
-                renderProducts(filtered);
-            });
-
-            document.getElementById('checkout-btn').addEventListener('click', () => {
-                triggerHaptic('heavy');
-                if (cart.length === 0) return alert('Добавьте товары в корзину');
-                
-                if (tg && typeof tg.sendData === 'function') {
-                    try { tg.sendData(JSON.stringify(cart)); } catch (e) {}
-                }
-                
-                alert('Заказ успешно оформлен!');
-                cart = [];
-                updateCart();
-                modal.classList.add('hidden');
-            });
-        });
-    </script>
-</body>
-</html>
+                let rarityColor = 'text-blue-400 border-blue-500/30 bg-blue-500/10';
+                if (p.rarity === 'HOLO RARE') rarityColor = 'text-purple-400 border-purple-500/30
