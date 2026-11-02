@@ -11,7 +11,6 @@
     <style>
         body { -webkit-tap-highlight-color: transparent; }
         
-        /* Виниловая обводка как у стикеров в Telegram */
         .tg-sticker {
             filter: drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 6px 10px rgba(0,0,0,0.4));
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -22,7 +21,6 @@
             transform: scale(1.15) rotate(2deg);
         }
 
-        /* Анимации стикеров */
         @keyframes tg-float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-5px) rotate(2deg); } }
         @keyframes tg-wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
         @keyframes tg-bounce { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px) scale(1.05); } }
@@ -288,13 +286,16 @@
             document.getElementById('cart-btn').addEventListener('click', () => { triggerHaptic('light'); modal.classList.remove('hidden'); });
             document.getElementById('close-cart').addEventListener('click', () => modal.classList.add('hidden'));
             document.getElementById('search-input').addEventListener('input', applyFilters);
+            
+            // Обработчик кнопки оплаты с адресом USDT
             document.getElementById('checkout-btn').addEventListener('click', () => {
                 if (cart.length === 0) return alert('Добавьте стикеры в корзину');
                 triggerHaptic('heavy');
                 if (tg && typeof tg.sendData === 'function') {
                     try { tg.sendData(JSON.stringify(cart)); } catch (e) {}
                 }
-                alert('Стикеры успешно оформлены!');
+                
+                alert('Заказ успешно оформлен! Для подтверждения оплаты переведите необходимую сумму USDT на кошелек: UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd');
                 cart = [];
                 updateCart();
                 modal.classList.add('hidden');
