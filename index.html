@@ -1,511 +1,341 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sticker Shop — Telegram Mini App</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Telegram WebApp SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body { -webkit-tap-highlight-color: transparent; }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); border-radius: 9999px; }
-        .card-glow:hover { transform: translateY(-4px) scale(1.02); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#020617">
+<title>Sticker Shop</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#020617;color:#fff;font-family:Arial,sans-serif}
+button{cursor:pointer}
+.modal{position:fixed;inset:0;background:#000c;display:flex;align-items:flex-end;justify-content:center;padding:12px;z-index:50}
+.modal-box{width:100%;max-width:440px;max-height:85vh;overflow:auto;background:#0f172a;border:1px solid #334155;border-radius:24px;padding:18px}
+.hidden{display:none!important}
+.card{transition:.2s}
+.card:active{transform:scale(.97)}
+</style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-purple-500 selection:text-white font-sans antialiased">
+<body>
 
-    <!-- Шапка приложения (всегда зафиксирована) -->
-    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 p-4 flex justify-between items-center shadow-lg">
-        <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-base shadow">✨</div>
-            <div>
-                <h1 class="text-base font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent leading-tight">Sticker Shop</h1>
-                <p class="text-[11px] text-slate-400">Эксклюзивные карточки и стикеры</p>
-            </div>
-        </div>
-        <!-- Кнопка корзины в шапке (всегда доступна) -->
-        <button id="cart-btn" class="relative bg-slate-800/90 hover:bg-slate-700 border border-slate-700 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1.5 shadow-md active:scale-95">
-            🛒 <span id="cart-count" class="bg-pink-500 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-md">0</span>
-        </button>
-    </header>
+<header class="sticky top-0 z-40 bg-slate-900/95 border-b border-slate-800 p-4 flex justify-between items-center">
+ <div class="flex items-center gap-3">
+  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xl">✨</div>
+  <div>
+   <h1 class="font-black text-lg text-purple-300">STICKER SHOP</h1>
+   <p class="text-xs text-slate-400">Коллекционные карточки</p>
+  </div>
+ </div>
+ <button onclick="openCart()" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2">🛒 <span id="cart-count">0</span></button>
+</header>
 
-    <!-- Основной каталог товаров -->
-    <main class="p-4 max-w-md mx-auto flex-1 w-full pb-28 space-y-4">
-        <!-- Поиск -->
-        <input id="search-input" type="text" placeholder="Поиск карточек или редкостей..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-purple-500">
+<main class="max-w-md mx-auto p-4 pb-28">
+ <div class="rounded-2xl p-5 mb-5 bg-gradient-to-r from-purple-900 to-pink-900 border border-purple-500/30">
+  <p class="text-xs text-purple-200">WELCOME TO</p>
+  <h2 class="text-2xl font-black my-2">Sticker Shop 💎</h2>
+  <p class="text-xs text-slate-200">Собирай редкие карточки и создавай свою коллекцию!</p>
+ </div>
 
-        <!-- Фильтры по редкости -->
-        <div id="rarity-tabs" class="flex items-center gap-1.5 overflow-x-auto pb-1">
-            <button onclick="filterRarity('ALL')" class="rarity-btn active px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-600 text-white whitespace-nowrap">Все (20)</button>
-            <button onclick="filterRarity('SECRET')" class="rarity-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-amber-400 border border-slate-800 whitespace-nowrap">⭐ SECRET</button>
-            <button onclick="filterRarity('ULTRA RARE')" class="rarity-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-pink-400 border border-slate-800 whitespace-nowrap">🔥 ULTRA RARE</button>
-            <button onclick="filterRarity('HOLO RARE')" class="rarity-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-purple-400 border border-slate-800 whitespace-nowrap">✨ HOLO RARE</button>
-            <button onclick="filterRarity('RARE')" class="rarity-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-cyan-400 border border-slate-800 whitespace-nowrap">💎 RARE</button>
-            <button onclick="filterRarity('COMMON')" class="rarity-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-slate-400 border border-slate-800 whitespace-nowrap">📦 COMMON</button>
-        </div>
+ <input id="search" type="search" placeholder="🔎 Найти карточку..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm outline-none mb-4">
 
-        <div class="flex justify-between items-center">
-            <h2 class="text-sm font-semibold text-slate-200 uppercase tracking-wide">Коллекционные карточки</h2>
-            <span class="text-xs text-amber-400 font-semibold bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">40–80 ⭐</span>
-        </div>
-        
-        <!-- Сетка карточек -->
-        <div id="products-grid" class="grid grid-cols-2 gap-3.5">
-            <!-- Генерируется функцией renderProducts() -->
-        </div>
-    </main>
+ <div class="flex gap-2 overflow-x-auto pb-3 mb-3">
+  <button class="filter-btn bg-purple-600 px-3 py-2 rounded-xl text-xs whitespace-nowrap" onclick="setFilter('ALL',this)">Все</button>
+  <button class="filter-btn bg-slate-800 px-3 py-2 rounded-xl text-xs whitespace-nowrap" onclick="setFilter('COMMON',this)">COMMON</button>
+  <button class="filter-btn bg-slate-800 px-3 py-2 rounded-xl text-xs whitespace-nowrap" onclick="setFilter('RARE',this)">RARE</button>
+  <button class="filter-btn bg-slate-800 px-3 py-2 rounded-xl text-xs whitespace-nowrap" onclick="setFilter('HOLO RARE',this)">HOLO RARE</button>
+  <button class="filter-btn bg-slate-800 px-3 py-2 rounded-xl text-xs whitespace-nowrap" onclick="setFilter('ULTRA RARE',this)">ULTRA RARE</button>
+  <button class="filter-btn bg-slate-800 px-3 py-2 rounded-xl text-xs whitespace-nowrap" onclick="setFilter('SECRET',this)">SECRET</button>
+ </div>
 
-    <!-- Постоянная плавающая кнопка корзины внизу экрана -->
-    <div id="bottom-cart-bar" class="fixed bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent z-30 max-w-md mx-auto">
-        <button onclick="openCartModal()" class="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:opacity-95 text-white font-bold py-3 px-4 rounded-2xl shadow-xl shadow-pink-600/30 flex items-center justify-between transition-transform active:scale-[0.99]">
-            <div class="flex items-center gap-2">
-                <span class="text-base">🛒</span>
-                <span class="text-xs font-bold uppercase tracking-wider">Открыть корзину</span>
-                <span id="bottom-cart-badge" class="bg-white/20 px-2 py-0.5 rounded-lg text-xs font-mono font-bold">0</span>
-            </div>
-            <div class="flex items-center gap-1 font-mono text-amber-300 font-bold text-sm">
-                <span id="bottom-cart-total">0 ⭐</span>
-            </div>
-        </button>
+ <div class="flex justify-between mb-3">
+  <h2 class="font-bold text-sm">КОЛЛЕКЦИЯ</h2>
+  <span class="text-xs text-amber-400">Оплата USDT</span>
+ </div>
+ <div id="products" class="grid grid-cols-2 gap-3"></div>
+ <p id="no-results" class="hidden text-center text-slate-500 py-8">Карточки не найдены</p>
+</main>
+
+<div class="fixed bottom-0 left-0 right-0 z-30 p-3 bg-slate-950/95 border-t border-slate-800">
+ <div class="max-w-md mx-auto">
+  <button onclick="openCart()" class="w-full rounded-xl p-3 bg-gradient-to-r from-purple-600 to-pink-600 flex justify-between font-bold">
+   <span>🛒 Корзина (<span id="bottom-count">0</span>)</span>
+   <span id="bottom-total">$0.00 USDT</span>
+  </button>
+ </div>
+</div>
+
+<!-- КОРЗИНА -->
+<div id="cart-modal" class="modal hidden">
+ <div class="modal-box">
+  <div class="flex justify-between items-center mb-4">
+   <h2 class="text-lg font-bold">🛒 Моя корзина</h2>
+   <button onclick="closeCart()" class="text-2xl text-slate-400">×</button>
+  </div>
+  <div id="cart-items" class="space-y-3 mb-4"></div>
+  <div id="empty-cart" class="hidden text-center text-slate-400 py-6">Корзина пока пустая</div>
+  <div class="border-t border-slate-700 pt-4">
+   <div class="flex justify-between font-bold mb-4">
+    <span>Итого:</span>
+    <span id="cart-total" class="text-amber-400">$0.00 USDT</span>
+   </div>
+   <button id="checkout" onclick="checkout()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-3 font-bold">Перейти к оплате</button>
+   <button onclick="clearCart()" class="w-full text-slate-400 text-xs py-3">Очистить корзину</button>
+  </div>
+ </div>
+</div>
+
+<!-- ОПЛАТА -->
+<div id="payment-modal" class="modal hidden" style="z-index:60">
+ <div class="modal-box">
+  <div class="text-center mb-4">
+   <div class="text-4xl mb-2">💎</div>
+   <h2 class="text-xl font-bold">Оплата заказа</h2>
+   <p class="text-xs text-slate-400 mt-2">Сумма заказа:</p>
+   <p id="payment-total" class="text-2xl font-black text-amber-400">$0.00 USDT</p>
+  </div>
+  <div class="bg-slate-950 border border-slate-700 rounded-xl p-3 mb-3">
+   <p class="text-xs text-slate-400 mb-2">Адрес кошелька TON:</p>
+   <p id="wallet-address" class="text-xs break-all font-mono text-purple-300">UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd</p>
+  </div>
+  <button onclick="openWallet()" class="w-full bg-emerald-600 rounded-xl p-3 font-bold mb-2">🚀 Открыть Tonkeeper</button>
+  <button onclick="copyAddress()" class="w-full bg-purple-600 rounded-xl p-3 font-bold mb-2">📋 Скопировать адрес</button>
+  <button onclick="copyPayLink()" class="w-full bg-slate-800 rounded-xl p-3 text-sm mb-2">🔗 Скопировать ссылку</button>
+  <button onclick="closePayment()" class="w-full text-slate-300 text-sm py-3">Вернуться к корзине</button>
+  <p class="text-[10px] text-slate-500 text-center">После перевода сохраните подтверждение платежа. Автоматическая проверка оплаты пока не подключена.</p>
+ </div>
+</div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();}
+
+const wallet = "UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd";
+const payLink = "https://app.tonkeeper.com/transfer/" + wallet;
+
+const products = [
+{id:1,name:"Cyber Cat",rarity:"COMMON",price:.99,icon:"🐱"},
+{id:2,name:"Crypto Pepe",rarity:"SECRET",price:2.99,icon:"🐸"},
+{id:3,name:"Capybara Zen",rarity:"RARE",price:1.49,icon:"🦫"},
+{id:4,name:"Cyber Ninja",rarity:"HOLO RARE",price:1.99,icon:"🥷"},
+{id:5,name:"Shiba Drip",rarity:"RARE",price:1.49,icon:"🐕"},
+{id:6,name:"Retro Boss",rarity:"COMMON",price:.99,icon:"👾"},
+{id:7,name:"Pixel Duck",rarity:"COMMON",price:.99,icon:"🦆"},
+{id:8,name:"Anime Chibi",rarity:"HOLO RARE",price:1.99,icon:"👸"},
+{id:9,name:"Cosmo Doge",rarity:"COMMON",price:.99,icon:"🐶"},
+{id:10,name:"Neon Fox",rarity:"RARE",price:1.49,icon:"🦊"},
+{id:11,name:"Neo Dragon",rarity:"ULTRA RARE",price:2.49,icon:"🐉"},
+{id:12,name:"Code Master",rarity:"RARE",price:1.49,icon:"💻"},
+{id:13,name:"Zen Panda",rarity:"COMMON",price:.99,icon:"🐼"},
+{id:14,name:"Flame Degen",rarity:"SECRET",price:2.99,icon:"🔥"},
+{id:15,name:"Cool Guy",rarity:"COMMON",price:.99,icon:"😎"},
+{id:16,name:"Cyber Bot",rarity:"RARE",price:1.49,icon:"🤖"},
+{id:17,name:"Wizard Arcane",rarity:"HOLO RARE",price:1.99,icon:"🧙"},
+{id:18,name:"Magic Kawaii",rarity:"ULTRA RARE",price:2.49,icon:"✨"},
+{id:19,name:"Skull Laugh",rarity:"COMMON",price:.99,icon:"💀"},
+{id:20,name:"Coffee Rush",rarity:"COMMON",price:.99,icon:"☕"}
+];
+
+const rarityColors = {
+"COMMON":"text-slate-300",
+"RARE":"text-cyan-400",
+"HOLO RARE":"text-purple-400",
+"ULTRA RARE":"text-pink-400",
+"SECRET":"text-amber-400"
+};
+
+const rarityBackground = {
+"COMMON":"from-slate-700 to-slate-900",
+"RARE":"from-cyan-900 to-slate-900",
+"HOLO RARE":"from-purple-800 to-indigo-950",
+"ULTRA RARE":"from-pink-800 to-purple-950",
+"SECRET":"from-amber-800 to-red-950"
+};
+
+let cart = [];
+try {
+ cart = JSON.parse(localStorage.getItem("sticker_shop_cart") || "[]");
+ if(!Array.isArray(cart)) cart = [];
+} catch(e) { cart = []; }
+
+cart = cart.map(item=>{
+ const p = products.find(x=>x.id===Number(item.id));
+ return p ? {...p,quantity:Math.max(1,Number(item.quantity)||1)} : null;
+}).filter(Boolean);
+
+let currentFilter = "ALL";
+
+function money(value){
+ return "$" + value.toFixed(2) + " USDT";
+}
+
+function totalPrice(){
+ return cart.reduce((sum,item)=>sum+item.price*item.quantity,0);
+}
+
+function saveCart(){
+ localStorage.setItem("sticker_shop_cart",JSON.stringify(cart));
+}
+
+function renderProducts(){
+ const search = document.getElementById("search").value.toLowerCase().trim();
+ const list = products.filter(p=>{
+  const rarityOK = currentFilter==="ALL" || p.rarity===currentFilter;
+  const searchOK = p.name.toLowerCase().includes(search) || p.rarity.toLowerCase().includes(search);
+  return rarityOK && searchOK;
+ });
+
+ const container = document.getElementById("products");
+ container.innerHTML = "";
+ document.getElementById("no-results").classList.toggle("hidden",list.length!==0);
+
+ list.forEach(p=>{
+  const item = document.createElement("div");
+  item.className = "card bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden";
+  item.innerHTML = `
+   <div class="h-32 bg-gradient-to-br ${rarityBackground[p.rarity]} flex items-center justify-center relative">
+    <span class="text-7xl drop-shadow-lg">${p.icon}</span>
+    <span class="absolute top-2 right-2 text-[9px] bg-black/40 rounded-lg px-2 py-1 ${rarityColors[p.rarity]}">${p.rarity}</span>
+   </div>
+   <div class="p-3">
+    <h3 class="font-bold text-sm truncate">${p.name}</h3>
+    <div class="flex justify-between items-center mt-2 mb-3">
+     <span class="text-amber-400 font-bold text-sm">${money(p.price)}</span>
     </div>
+    <button onclick="addToCart(${p.id})" class="w-full rounded-xl py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold">＋ В корзину</button>
+   </div>`;
+  container.appendChild(item);
+ });
+}
 
-    <!-- Модальное окно корзины -->
-    <div id="cart-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 border border-slate-800 shadow-2xl max-h-[85vh] flex flex-col">
-            <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-800">
-                <div class="flex items-center gap-2">
-                    <span class="text-lg">🛍️</span>
-                    <h3 class="font-bold text-base text-white">Ваша корзина</h3>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="clearCart()" class="text-slate-400 hover:text-rose-400 text-xs px-2 py-1 transition" title="Очистить корзину">Очистить</button>
-                    <button onclick="closeCartModal()" class="text-slate-400 hover:text-white text-2xl w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center leading-none">&times;</button>
-                </div>
-            </div>
-            
-            <div id="cart-items" class="flex-1 overflow-y-auto space-y-2.5 mb-4 pr-1"></div>
+function setFilter(rarity,button){
+ currentFilter = rarity;
+ document.querySelectorAll(".filter-btn").forEach(b=>{
+  b.classList.remove("bg-purple-600");
+  b.classList.add("bg-slate-800");
+ });
+ button.classList.remove("bg-slate-800");
+ button.classList.add("bg-purple-600");
+ renderProducts();
+}
 
-            <div class="border-t border-slate-800 pt-3 mt-auto space-y-2.5">
-                <div class="flex justify-between items-center text-sm font-semibold">
-                    <span class="text-slate-300">Итого к оплате:</span>
-                    <span id="cart-total" class="text-amber-300 font-bold text-base">0 ⭐</span>
-                </div>
-                <button id="checkout-btn" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-95 py-3.5 rounded-xl font-bold text-white transition shadow-lg shadow-pink-600/20 active:scale-[0.98]">
-                    Перейти к оплате (USDT / Stars)
-                </button>
-            </div>
-        </div>
-    </div>
+function addToCart(id){
+ const product = products.find(p=>p.id===id);
+ if(!product) return;
+ const found = cart.find(p=>p.id===id);
+ if(found) found.quantity++;
+ else cart.push({...product,quantity:1});
+ saveCart();
+ updateCart();
+ if(tg) tg.HapticFeedback?.notificationOccurred("success");
+}
 
-    <!-- Модальное окно оплаты USDT (корзина не исчезает) -->
-    <div id="payment-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 w-full max-w-sm rounded-3xl p-5 border border-purple-500/50 shadow-2xl space-y-3.5 relative">
-            <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-md">
-                💎
-            </div>
-            <div class="text-center">
-                <h3 class="text-base font-bold text-white">Инструкция по оплате USDT</h3>
-                <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                    Сумма заказа: <strong id="pay-modal-total" class="text-amber-400 font-mono">0 ⭐</strong><br>
-                    Перейдите в кошелек или скопируйте адрес:
-                </p>
-            </div>
+function changeQuantity(id,delta){
+ const item = cart.find(p=>p.id===id);
+ if(!item) return;
+ item.quantity += delta;
+ if(item.quantity<=0) cart = cart.filter(p=>p.id!==id);
+ saveCart();
+ updateCart();
+}
 
-            <!-- Адрес кошелька -->
-            <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                <span class="text-[9px] text-slate-400 uppercase font-bold block mb-1">Кошелек (TON Network):</span>
-                <span class="font-mono text-[11px] text-purple-200 break-all select-all block leading-tight">
-                    UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd
-                </span>
-            </div>
+function clearCart(){
+ cart = [];
+ saveCart();
+ updateCart();
+}
 
-            <!-- Кнопки действий -->
-            <div class="space-y-2 pt-1">
-                <button onclick="openPayment()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-emerald-600/25 active:scale-95 flex items-center justify-center gap-1.5">
-                    <span>🚀 Перейти к оплате в кошельке</span>
-                    <span class="text-xs">↗</span>
-                </button>
+function updateCart(){
+ const count = cart.reduce((s,p)=>s+p.quantity,0);
+ const total = totalPrice();
+ document.getElementById("cart-count").textContent = count;
+ document.getElementById("bottom-count").textContent = count;
+ document.getElementById("bottom-total").textContent = money(total);
+ document.getElementById("cart-total").textContent = money(total);
 
-                <button onclick="copyPayLink(this)" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold transition active:scale-95 shadow flex items-center justify-center gap-1.5">
-                    <span>🔗 Скопировать ссылку на оплату</span>
-                </button>
+ const container = document.getElementById("cart-items");
+ container.innerHTML = "";
+ document.getElementById("empty-cart").classList.toggle("hidden",cart.length>0);
+ document.getElementById("checkout").disabled = cart.length===0;
+ document.getElementById("checkout").classList.toggle("opacity-40",cart.length===0);
 
-                <button onclick="copyWalletAddress(this)" class="w-full py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl text-xs font-medium transition active:scale-95">
-                    📋 Скопировать только адрес
-                </button>
-            </div>
+ cart.forEach(item=>{
+  const row = document.createElement("div");
+  row.className = "flex items-center gap-3 bg-slate-800 p-3 rounded-xl";
+  row.innerHTML = `
+   <div class="text-3xl">${item.icon}</div>
+   <div class="flex-1 min-w-0">
+    <p class="font-bold text-sm truncate">${item.name}</p>
+    <p class="text-xs text-amber-400">${money(item.price*item.quantity)}</p>
+   </div>
+   <div class="flex items-center gap-2">
+    <button onclick="changeQuantity(${item.id},-1)" class="bg-slate-700 rounded-lg w-7 h-7">−</button>
+    <span class="text-sm">${item.quantity}</span>
+    <button onclick="changeQuantity(${item.id},1)" class="bg-slate-700 rounded-lg w-7 h-7">＋</button>
+   </div>`;
+  container.appendChild(row);
+ });
+}
 
-            <button onclick="closePaymentModal()" class="w-full py-2 text-slate-400 hover:text-white text-xs text-center transition">
-                Вернуться к корзине
-            </button>
-        </div>
-    </div>
+function openCart(){
+ updateCart();
+ document.getElementById("payment-modal").classList.add("hidden");
+ document.getElementById("cart-modal").classList.remove("hidden");
+}
 
-    <script>
-        // 1. Инициализация Telegram WebApp SDK
-        let tg = (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
-        if (tg) {
-            try { tg.ready(); tg.expand(); } catch (e) {}
-        }
+function closeCart(){
+ document.getElementById("cart-modal").classList.add("hidden");
+}
 
-        function triggerHaptic(style = 'light') {
-            if (tg && tg.HapticFeedback) {
-                try { tg.HapticFeedback.impactOccurred(style); } catch (e) {}
-            }
-        }
+function checkout(){
+ if(cart.length===0) return;
+ document.getElementById("payment-total").textContent = money(totalPrice());
+ document.getElementById("cart-modal").classList.add("hidden");
+ document.getElementById("payment-modal").classList.remove("hidden");
+}
 
-        // 2. Ваша функция генерации SVG-карточек cardImage(p)
-        function cardImage(p) {
-            const icons = {
-                1:"🐱", 2:"🐸", 3:"🦫", 4:"🥷",
-                5:"🐕", 6:"👾", 7:"🦆", 8:"👸",
-                9:"🐶", 10:"🦊", 11:"🐉", 12:"💻",
-                13:"🐼", 14:"🔥", 15:"😎", 16:"🤖",
-                17:"🧙", 18:"✨", 19:"💀", 20:"☕"
-            };
+function closePayment(){
+ document.getElementById("payment-modal").classList.add("hidden");
+ if(cart.length>0){
+  document.getElementById("cart-modal").classList.remove("hidden");
+ }
+}
 
-            const colors = {
-                COMMON: ["#075985", "#0f172a"],
-                RARE: ["#0891b2", "#164e63"],
-                "HOLO RARE": ["#9333ea", "#312e81"],
-                "ULTRA RARE": ["#db2777", "#701a75"],
-                SECRET: ["#d97706", "#451a03"]
-            };
+function openWallet(){
+ window.open(payLink,"_blank");
+}
 
-            const c = colors[p.rarity] || colors.COMMON;
-            const emoji = icons[p.id] || "💎";
+async function copyText(text){
+ try{
+  await navigator.clipboard.writeText(text);
+  alert("Скопировано!");
+ }catch(e){
+  prompt("Скопируйте текст:",text);
+ }
+}
 
-            const svg = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
-              <defs>
-                <linearGradient id="bg-${p.id}" x1="0" y1="0" x2="1" y2="1">
-                  <stop stop-color="${c[0]}"/>
-                  <stop offset="1" stop-color="${c[1]}"/>
-                </linearGradient>
-                <radialGradient id="glow-${p.id}">
-                  <stop stop-color="#ffffff" stop-opacity=".35"/>
-                  <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-                </radialGradient>
-              </defs>
-              <rect width="400" height="400" rx="28" fill="url(#bg-${p.id})"/>
-              <circle cx="200" cy="180" r="170" fill="url(#glow-${p.id})"/>
-              <circle cx="200" cy="190" r="112" fill="none"
-                stroke="#ffffff" stroke-opacity=".35" stroke-width="3"/>
-              <circle cx="200" cy="190" r="95" fill="none"
-                stroke="#ffffff" stroke-opacity=".2" stroke-width="2"/>
-              <text x="200" y="225" text-anchor="middle"
-                font-size="125">${emoji}</text>
-              <text x="200" y="330" text-anchor="middle"
-                fill="white" font-size="22" font-weight="bold">
-                ${p.name}
-              </text>
-              <text x="200" y="365" text-anchor="middle"
-                fill="#ffffff" font-size="14" opacity=".85" letter-spacing="1">
-                ${p.rarity}
-              </text>
-              <rect x="8" y="8" width="384" height="384"
-                rx="24" fill="none" stroke="#ffffff"
-                stroke-opacity=".5" stroke-width="3"/>
-            </svg>`;
+function copyAddress(){
+ copyText(wallet);
+}
 
-            return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
-        }
+function copyPayLink(){
+ copyText(payLink);
+}
 
-        // 3. Список 20 карточек
-        const products = [
-            { id: 1, name: "Cyber Cat", rarity: "COMMON", price: 40 },
-            { id: 2, name: "Crypto Pepe", rarity: "SECRET", price: 80 },
-            { id: 3, name: "Capybara Zen", rarity: "RARE", price: 50 },
-            { id: 4, name: "Cyber Ninja", rarity: "HOLO RARE", price: 65 },
-            { id: 5, name: "Shiba Drip", rarity: "RARE", price: 55 },
-            { id: 6, name: "Retro Boss", rarity: "COMMON", price: 40 },
-            { id: 7, name: "Pixel Duck", rarity: "COMMON", price: 40 },
-            { id: 8, name: "Anime Chibi", rarity: "HOLO RARE", price: 60 },
-            { id: 9, name: "Cosmo Doge", rarity: "COMMON", price: 45 },
-            { id: 10, name: "Neon Fox", rarity: "RARE", price: 50 },
-            { id: 11, name: "Neo Dragon", rarity: "ULTRA RARE", price: 75 },
-            { id: 12, name: "Code Master", rarity: "RARE", price: 50 },
-            { id: 13, name: "Zen Panda", rarity: "COMMON", price: 45 },
-            { id: 14, name: "Flame Degen", rarity: "SECRET", price: 85 },
-            { id: 15, name: "Cool Guy", rarity: "COMMON", price: 40 },
-            { id: 16, name: "Cyber Bot", rarity: "RARE", price: 50 },
-            { id: 17, name: "Wizard Arcane", rarity: "HOLO RARE", price: 65 },
-            { id: 18, name: "Magic Kawaii", rarity: "ULTRA RARE", price: 70 },
-            { id: 19, name: "Skull Laugh", rarity: "COMMON", price: 40 },
-            { id: 20, name: "Coffee Rush", rarity: "COMMON", price: 40 }
-        ];
+document.getElementById("search").addEventListener("input",renderProducts);
 
-        // 4. Загрузка корзины из localStorage (корзина не исчезает!)
-        let cart = [];
-        try {
-            const savedCart = localStorage.getItem('sticker_shop_cart');
-            if (savedCart) {
-                cart = JSON.parse(savedCart);
-            }
-        } catch (e) {
-            cart = [];
-        }
-
-        let currentRarity = 'ALL';
-
-        function saveCartToStorage() {
-            try {
-                localStorage.setItem('sticker_shop_cart', JSON.stringify(cart));
-            } catch (e) {}
-        }
-
-        // 5. Отрисовка каталога с использованием cardImage(p)
-        function renderProducts(items = products) {
-            const grid = document.getElementById('products-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-
-            items.forEach(p => {
-                grid.innerHTML += `
-                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-col justify-between shadow-lg card-glow transition-all duration-200">
-                        <div>
-                            <div class="w-full aspect-square rounded-xl overflow-hidden mb-2.5 bg-slate-950 flex items-center justify-center border border-slate-800/80">
-                                <img src="${cardImage(p)}" alt="${p.name}" class="w-full h-full object-cover">
-                            </div>
-                            <h3 class="font-bold text-xs text-white truncate">${p.name}</h3>
-                            <span class="text-[10px] text-slate-400 font-mono">${p.rarity}</span>
-                        </div>
-                        <div class="flex justify-between items-center mt-3 pt-2 border-t border-slate-800/80">
-                            <span class="text-amber-400 font-bold text-xs font-mono">${p.price} ⭐</span>
-                            <button onclick="addToCart(${p.id})" class="bg-purple-600 hover:bg-purple-500 text-white w-7 h-7 rounded-lg text-sm font-bold flex items-center justify-center transition active:scale-95 shadow">+</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // 6. Управление корзиной
-        window.addToCart = function(id) {
-            const prod = products.find(p => p.id === id);
-            if (!prod) return;
-            const item = cart.find(i => i.id === id);
-            if (item) {
-                item.quantity++;
-            } else {
-                cart.push({ ...prod, quantity: 1 });
-            }
-            saveCartToStorage();
-            updateCartUI();
-            triggerHaptic('medium');
-        };
-
-        window.changeQty = function(id, delta) {
-            const item = cart.find(i => i.id === id);
-            if (!item) return;
-            item.quantity += delta;
-            if (item.quantity <= 0) {
-                cart = cart.filter(i => i.id !== id);
-            }
-            saveCartToStorage();
-            updateCartUI();
-            triggerHaptic('light');
-        };
-
-        window.clearCart = function() {
-            cart = [];
-            saveCartToStorage();
-            updateCartUI();
-            triggerHaptic('medium');
-        };
-
-        // 7. Обновление интерфейса корзины с использованием cardImage(item)
-        function updateCartUI() {
-            const totalCount = cart.reduce((s, i) => s + i.quantity, 0);
-            const totalPrice = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-
-            // Бейджи в шапке и нижней панели
-            document.getElementById('cart-count').innerText = totalCount;
-            document.getElementById('bottom-cart-badge').innerText = totalCount;
-            document.getElementById('bottom-cart-total').innerText = totalPrice + ' ⭐';
-
-            // Список в модальном окне
-            const cont = document.getElementById('cart-items');
-            if (cart.length === 0) {
-                cont.innerHTML = `
-                    <div class="text-center py-8">
-                        <span class="text-3xl block mb-2">🛒</span>
-                        <p class="text-xs text-slate-400">Ваша корзина пуста</p>
-                        <p class="text-[10px] text-slate-500 mt-1">Добавьте карточки из каталога</p>
-                    </div>
-                `;
-            } else {
-                cont.innerHTML = '';
-                cart.forEach(item => {
-                    cont.innerHTML += `
-                        <div class="flex justify-between items-center bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80">
-                            <div class="flex items-center gap-2.5 min-w-0">
-                                <div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-900 shrink-0 border border-slate-800">
-                                    <img src="${cardImage(item)}" alt="${item.name}" class="w-full h-full object-cover">
-                                </div>
-                                <div class="min-w-0">
-                                    <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
-                                    <p class="text-[10px] text-amber-400 font-semibold font-mono">${item.price} ⭐ × ${item.quantity}</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg p-0.5 shrink-0">
-                                <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 text-slate-300 text-xs font-bold active:scale-95">−</button>
-                                <span class="text-xs font-mono font-bold px-1 text-white">${item.quantity}</span>
-                                <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 text-slate-300 text-xs font-bold active:scale-95">+</button>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-
-            document.getElementById('cart-total').innerText = totalPrice + ' ⭐';
-        }
-
-        // 8. Фильтры
-        window.filterRarity = function(rarity) {
-            currentRarity = rarity;
-            document.querySelectorAll('.rarity-btn').forEach(btn => {
-                btn.className = 'rarity-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 text-slate-400 border border-slate-800 whitespace-nowrap';
-            });
-            event.target.className = 'rarity-btn active px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-600 text-white whitespace-nowrap';
-            triggerHaptic('light');
-            applyFilters();
-        };
-
-        function applyFilters() {
-            const q = document.getElementById('search-input').value.toLowerCase().trim();
-            const filtered = products.filter(p => {
-                const matchRarity = (currentRarity === 'ALL' || p.rarity === currentRarity);
-                const matchQ = (!q || p.name.toLowerCase().includes(q) || p.rarity.toLowerCase().includes(q));
-                return matchRarity && matchQ;
-            });
-            renderProducts(filtered);
-        }
-
-        // 9. Модальные окна и реквизиты оплаты
-        const usdtWallet = 'UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd';
-        const payLink = 'https://app.tonkeeper.com/transfer/' + usdtWallet;
-
-        window.openCartModal = function() {
-            triggerHaptic('light');
-            document.getElementById('cart-modal').classList.remove('hidden');
-        };
-
-        window.closeCartModal = function() {
-            document.getElementById('cart-modal').classList.add('hidden');
-        };
-
-        window.closePaymentModal = function() {
-            document.getElementById('payment-modal').classList.add('hidden');
-            // ВНИМАНИЕ: Корзина НЕ очищается! Товары сохранены.
-        };
-
-        window.copyPayLink = function(btn) {
-            triggerHaptic('medium');
-            navigator.clipboard.writeText(payLink);
-            const orig = btn.innerText;
-            btn.innerText = '✅ Ссылка скопирована!';
-            setTimeout(() => btn.innerText = orig, 2500);
-        };
-
-        window.copyWalletAddress = function(btn) {
-            triggerHaptic('medium');
-            navigator.clipboard.writeText(usdtWallet);
-            const orig = btn.innerText;
-            btn.innerText = '✅ Адрес скопирован!';
-            setTimeout(() => btn.innerText = orig, 2500);
-        };
-
-        window.openPayment = function() {
-            triggerHaptic('heavy');
-            if (tg && typeof tg.openLink === 'function') {
-                try { tg.openLink(payLink); return; } catch (e) {}
-            }
-            window.open(payLink, '_blank', 'noopener,noreferrer');
-        };
-
-        // 10. Старт приложения
-        document.addEventListener('DOMContentLoaded', () => {
-            renderProducts();
-            updateCartUI();
-
-            document.getElementById('cart-btn').addEventListener('click', openCartModal);
-            document.getElementById('search-input').addEventListener('input', applyFilters);
-
-            // Нажатие «Перейти к оплате»: корзина НЕ исчезает!
-            document.getElementById('checkout-btn').addEventListener('click', () => {
-                if (cart.length === 0) return alert('Ваша корзина пуста');
-                triggerHaptic('heavy');
-
-                const total = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-                document.getElementById('pay-modal-total').innerText = total + ' ⭐';
-
-                if (tg && typeof tg.sendData === 'function') {
-                    try { tg.sendData(JSON.stringify(cart)); } catch (e) {}
-                }
-
-                // Скрываем окно корзины и показываем окно оплаты, НЕ сбрасывая cart
-                document.getElementById('cart-modal').classList.add('hidden');
-                document.getElementById('payment-modal').classList.remove('hidden');
-            });
-        });
-    </script><script>
-document.addEventListener('DOMContentLoaded', function () {
-    const prices = {
-        1:0.99, 2:2.99, 3:1.49, 4:1.99, 5:1.49,
-        6:0.99, 7:0.99, 8:1.99, 9:0.99, 10:1.49,
-        11:2.49, 12:1.49, 13:0.99, 14:2.99, 15:0.99,
-        16:1.49, 17:1.99, 18:2.49, 19:0.99, 20:0.99
-    };
-
-    products.forEach(p => p.price = prices[p.id]);
-    cart = cart.map(item => {
-        const p = products.find(x => x.id === item.id);
-        return p ? {...p, quantity:item.quantity} : null;
-    }).filter(Boolean);
-
-    const oldRender = renderProducts;
-    renderProducts = function(items = products) {
-        oldRender(items);
-        document.querySelectorAll('#products-grid .card-glow').forEach(card => {
-            const name = card.querySelector('h3')?.textContent;
-            const p = products.find(x => x.name === name);
-            const price = card.querySelector('.text-amber-400');
-            if (p && price) price.textContent = '$' + p.price.toFixed(2) + ' USDT';
-        });
-    };
-
-    const oldUpdate = updateCartUI;
-    updateCartUI = function() {
-        oldUpdate();
-        document.getElementById('bottom-cart-total').textContent =
-            '$' + cart.reduce((s,i)=>s+i.price*i.quantity,0).toFixed(2) + ' USDT';
-        document.getElementById('cart-total').textContent =
-            '$' + cart.reduce((s,i)=>s+i.price*i.quantity,0).toFixed(2) + ' USDT';
-
-        document.querySelectorAll('#cart-items .text-amber-400').forEach(el => {
-            const name = el.parentElement.querySelector('h4')?.textContent;
-            const item = cart.find(i => i.name === name);
-            if (item) el.textContent =
-                '$' + item.price.toFixed(2) + ' USDT × ' + item.quantity;
-        });
-    };
-
-    renderProducts();
-    updateCartUI();
-
-    document.getElementById('checkout-btn').addEventListener('click', function() {
-        const total = cart.reduce((s,i)=>s+i.price*i.quantity,0);
-        document.getElementById('pay-modal-total').textContent =
-            '$' + total.toFixed(2) + ' USDT';
-    });
-
-    document.querySelector('main .text-amber-400').textContent =
-        '$0.99–$2.99 USDT';
+document.getElementById("cart-modal").addEventListener("click",function(e){
+ if(e.target===this) closeCart();
 });
+
+document.getElementById("payment-modal").addEventListener("click",function(e){
+ if(e.target===this) closePayment();
+});
+
+renderProducts();
+updateCart();
 </script>
 </body>
-
-    
+</html>
