@@ -451,6 +451,61 @@
                 document.getElementById('payment-modal').classList.remove('hidden');
             });
         });
-    </script>
+    </script><script>
+document.addEventListener('DOMContentLoaded', function () {
+    const prices = {
+        1:0.99, 2:2.99, 3:1.49, 4:1.99, 5:1.49,
+        6:0.99, 7:0.99, 8:1.99, 9:0.99, 10:1.49,
+        11:2.49, 12:1.49, 13:0.99, 14:2.99, 15:0.99,
+        16:1.49, 17:1.99, 18:2.49, 19:0.99, 20:0.99
+    };
+
+    products.forEach(p => p.price = prices[p.id]);
+    cart = cart.map(item => {
+        const p = products.find(x => x.id === item.id);
+        return p ? {...p, quantity:item.quantity} : null;
+    }).filter(Boolean);
+
+    const oldRender = renderProducts;
+    renderProducts = function(items = products) {
+        oldRender(items);
+        document.querySelectorAll('#products-grid .card-glow').forEach(card => {
+            const name = card.querySelector('h3')?.textContent;
+            const p = products.find(x => x.name === name);
+            const price = card.querySelector('.text-amber-400');
+            if (p && price) price.textContent = '$' + p.price.toFixed(2) + ' USDT';
+        });
+    };
+
+    const oldUpdate = updateCartUI;
+    updateCartUI = function() {
+        oldUpdate();
+        document.getElementById('bottom-cart-total').textContent =
+            '$' + cart.reduce((s,i)=>s+i.price*i.quantity,0).toFixed(2) + ' USDT';
+        document.getElementById('cart-total').textContent =
+            '$' + cart.reduce((s,i)=>s+i.price*i.quantity,0).toFixed(2) + ' USDT';
+
+        document.querySelectorAll('#cart-items .text-amber-400').forEach(el => {
+            const name = el.parentElement.querySelector('h4')?.textContent;
+            const item = cart.find(i => i.name === name);
+            if (item) el.textContent =
+                '$' + item.price.toFixed(2) + ' USDT × ' + item.quantity;
+        });
+    };
+
+    renderProducts();
+    updateCartUI();
+
+    document.getElementById('checkout-btn').addEventListener('click', function() {
+        const total = cart.reduce((s,i)=>s+i.price*i.quantity,0);
+        document.getElementById('pay-modal-total').textContent =
+            '$' + total.toFixed(2) + ' USDT';
+    });
+
+    document.querySelector('main .text-amber-400').textContent =
+        '$0.99–$2.99 USDT';
+});
+</script>
 </body>
-</html>
+
+    
