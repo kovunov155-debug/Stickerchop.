@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kovunov155-debug.github.io/Sticker-/sitemap.xml

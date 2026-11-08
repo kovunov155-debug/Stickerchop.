@@ -3,7 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>Crypto Spin — Колесо Крипто-Фортуны</title>
+  <title>Crypto Spin — Колесо Крипто-Фортуны и Стикеры | TON, USDT, Stars</title>
+  <meta name="description" content="Crypto Spin — официальный Telegram бот и Mini App. Крути колесо крипто-фортуны, выигрывай реальные TON, USDT, NOT, DOGS и выводи на TON-кошелек! Каталог из 20 стикеров за Telegram Stars.">
+  <meta name="keywords" content="crypto spin, крипто спин, колесо фортуны telegram, телеграм бот, стикеры telegram stars, ton, usdt, tonkeeper, вывести ton, dogs, notcoin, крипто игра телеграм, заработок ton">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kovunov155-debug.github.io/Sticker-/">
+
+  <!-- OpenGraph Metadata -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Crypto Spin — Колесо Крипто-Фортуны и Стикеры в Telegram">
+  <meta property="og:description" content="Крути колесо фортуны, выигрывай TON, USDT, NOT и DOGS! Мгновенный вывод на кошелек. Каталог стикеров за Telegram Stars.">
+  <meta property="og:url" content="https://kovunov155-debug.github.io/Sticker-/">
+  <meta property="og:site_name" content="Crypto Spin Telegram Bot">
+  <meta property="og:image" content="https://kovunov155-debug.github.io/Stickerchop./grok_1793863248535.jpg">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Crypto Spin — Колесо Крипто-Фортуны в Telegram">
+  <meta name="twitter:description" content="Выигрывай TON, USDT, NOT, DOGS и сорви Джекпот 10 TON + 25 USDT! Мгновенный вывод.">
+  <meta name="twitter:image" content="https://kovunov155-debug.github.io/Stickerchop./grok_1793863248535.jpg">
+
+  <!-- Schema.org Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Crypto Spin — Колесо Крипто-Фортуны",
+    "alternateName": "Crypto Spin Telegram Mini App",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Telegram, Web, Android, iOS",
+    "description": "Telegram Mini App с колесом крипто-фортуны и каталогом стикеров. Выигрывайте TON, USDT, NOT, DOGS с выводом на кошелек.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
@@ -11,8 +48,8 @@
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { margin: 0; background: #020617; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; }
     .tab-active { background: linear-gradient(135deg, #f59e0b, #ec4899, #8b5cf6); color: #fff !important; box-shadow: 0 4px 15px rgba(236,72,153,0.4); }
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); display: none; align-items: flex-end; justify-content: center; padding: 12px; z-index: 100; }
-    .modal-content { width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; background: #0f172a; border: 1px solid #334155; border-radius: 28px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 99999; }
+    .modal-content { width: 100%; max-width: 440px; max-height: 88vh; overflow-y: auto; background: #0f172a; border: 1px solid #334155; border-radius: 28px; padding: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.9); }
     @keyframes led-blink { 0%, 100% { opacity: 0.35; filter: drop-shadow(0 0 2px #f59e0b); } 50% { opacity: 1; filter: drop-shadow(0 0 8px #fbbf24); } }
     .anim-led { animation: led-blink 1.2s ease-in-out infinite; }
   </style>
@@ -29,7 +66,10 @@
       </div>
     </div>
     <div class="flex items-center gap-1.5">
-      <button onclick="openStartModal()" class="bg-gradient-to-r from-amber-500/20 to-pink-500/20 border border-amber-400/50 text-amber-300 px-2 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition cursor-pointer" title="Что умеет бот">🚀 Старт</button>
+      <button id="btn-header-start" onclick="openStartModal(event)" class="bg-gradient-to-r from-amber-500/20 to-pink-500/20 border border-amber-400/50 text-amber-300 px-2.5 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition cursor-pointer flex items-center gap-1 shadow" title="Что умеет бот / Старт">
+        <span>🚀</span>
+        <span>Старт</span>
+      </button>
       <button onclick="openWithdrawModal()" class="bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 px-2.5 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition cursor-pointer">💳 Вывод</button>
       <button onclick="openCart()" class="relative bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
         <span>🛒</span>
@@ -257,21 +297,24 @@
   </div>
 
   <!-- Модалка: Старт и Что умеет бот -->
-  <div id="start-modal" class="modal-backdrop" style="display: none; align-items: center;">
-    <div class="modal-content border-2 border-amber-400/60 rounded-3xl p-5 max-w-sm w-full space-y-4 shadow-[0_0_50px_rgba(245,158,11,0.3)]">
-      <div class="text-center pt-1">
-        <div class="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-400 via-pink-500 to-purple-600 items-center justify-center text-3xl shadow-xl shadow-pink-500/30 mb-2">
-          🎰
+  <div id="start-modal" class="modal-backdrop" onclick="handleBackdropClick(event)" style="display: none; align-items: center;">
+    <div class="modal-content border-2 border-amber-400/60 rounded-3xl p-5 max-w-sm w-full space-y-4 shadow-[0_0_50px_rgba(245,158,11,0.3)] relative">
+      <div class="flex justify-between items-start">
+        <div class="flex-1 text-center pl-6 pt-1">
+          <div class="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-400 via-pink-500 to-purple-600 items-center justify-center text-3xl shadow-xl shadow-pink-500/30 mb-2">
+            🎰
+          </div>
+          <div class="text-[11px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-300 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+            Официальный бот
+          </div>
+          <h2 id="start-modal-title" class="text-xl font-black text-white mt-0.5">
+            Привет, Игрок! 👋
+          </h2>
+          <p class="text-xs text-slate-300 mt-1 leading-snug">
+            Добро пожаловать в <b class="text-amber-300">Crypto Spin</b> — крипто-колесо фортуны и магазин стикеров в Telegram!
+          </p>
         </div>
-        <div class="text-[11px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-300 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-          Официальный бот
-        </div>
-        <h2 id="start-modal-title" class="text-xl font-black text-white mt-0.5">
-          Привет, Игрок! 👋
-        </h2>
-        <p class="text-xs text-slate-300 mt-1 leading-snug">
-          Добро пожаловать в <b class="text-amber-300">Crypto Spin</b> — крипто-колесо фортуны и магазин стикеров в Telegram!
-        </p>
+        <button onclick="closeStartModal(event)" class="text-2xl text-slate-400 hover:text-white leading-none p-1 cursor-pointer" title="Закрыть">&times;</button>
       </div>
 
       <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-2.5 text-xs">
@@ -325,12 +368,18 @@
         </div>
       </div>
 
-      <button onclick="closeStartModal()" class="w-full bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 hover:from-amber-300 hover:to-purple-500 text-slate-950 font-black py-3.5 rounded-2xl shadow-xl shadow-pink-500/25 active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer">
+      <button id="btn-start-action" onclick="closeStartModal(event)" class="w-full bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 hover:from-amber-300 hover:to-purple-500 text-slate-950 font-black py-3.5 rounded-2xl shadow-xl shadow-pink-500/25 active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer">
         <span>🚀</span>
         <span>ПОГНАЛИ КРУТИТЬ!</span>
       </button>
     </div>
   </div>
+
+  <!-- Плавающая кнопка О боте / Старт для мобильных -->
+  <button id="floating-start-btn" onclick="openStartModal(event)" class="fixed bottom-3 right-3 z-30 bg-gradient-to-r from-amber-500 to-pink-600 text-slate-950 font-black text-xs px-3 py-2 rounded-2xl shadow-[0_4px_20px_rgba(245,158,11,0.5)] border border-amber-300/60 flex items-center gap-1.5 active:scale-95 transition cursor-pointer">
+    <span>🚀</span>
+    <span>О боте</span>
+  </button>
 
   <script>
     var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
@@ -760,21 +809,32 @@
       window.open(TONKEEPER_URL, "_blank");
     }
 
-    function openStartModal() {
+    function openStartModal(e) {
+      if (e && e.preventDefault) e.preventDefault();
       haptic("light");
       var tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : null;
       var name = tgUser && tgUser.first_name ? tgUser.first_name : "Игрок";
       var titleEl = document.getElementById("start-modal-title");
       if (titleEl) titleEl.textContent = "Привет, " + name + "! 👋";
       var m = document.getElementById("start-modal");
-      if (m) m.style.display = "flex";
+      if (m) {
+        m.style.display = "flex";
+        m.style.zIndex = "99999";
+      }
     }
 
-    function closeStartModal() {
+    function closeStartModal(e) {
+      if (e && e.preventDefault) e.preventDefault();
       haptic("heavy");
-      try { localStorage.setItem("stick_chop_has_seen_start", "true"); } catch (e) {}
+      try { localStorage.setItem("stick_chop_has_seen_start", "true"); } catch (err) {}
       var m = document.getElementById("start-modal");
       if (m) m.style.display = "none";
+    }
+
+    function handleBackdropClick(e) {
+      if (e && e.target && e.target.id === "start-modal") {
+        closeStartModal(e);
+      }
     }
 
     function openWithdrawModal() {
@@ -974,8 +1034,20 @@
         updateUI();
         updateCartUI();
         renderShop();
+
+        var b1 = document.getElementById("btn-header-start");
+        if (b1) {
+          b1.addEventListener("click", openStartModal);
+          b1.addEventListener("touchend", openStartModal);
+        }
+        var b2 = document.getElementById("floating-start-btn");
+        if (b2) {
+          b2.addEventListener("click", openStartModal);
+          b2.addEventListener("touchend", openStartModal);
+        }
+
         if (!localStorage.getItem("stick_chop_has_seen_start")) {
-          setTimeout(openStartModal, 300);
+          setTimeout(function() { openStartModal(); }, 350);
         }
       } catch (err) {
         console.error("InitApp error:", err);
