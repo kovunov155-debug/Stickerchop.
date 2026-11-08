@@ -1,341 +1,899 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#020617">
-<title>Sticker Shop</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#020617;color:#fff;font-family:Arial,sans-serif}
-button{cursor:pointer}
-.modal{position:fixed;inset:0;background:#000c;display:flex;align-items:flex-end;justify-content:center;padding:12px;z-index:50}
-.modal-box{width:100%;max-width:440px;max-height:85vh;overflow:auto;background:#0f172a;border:1px solid #334155;border-radius:24px;padding:18px}
-.hidden{display:none!important}
-.card{transition:.2s}
-.card:active{transform:scale(.97)}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Crypto Spin — Колесо Крипто-Фортуны</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; background: #020617; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; }
+    .tab-active { background: linear-gradient(135deg, #f59e0b, #ec4899, #8b5cf6); color: #fff !important; box-shadow: 0 4px 15px rgba(236,72,153,0.4); }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); display: none; align-items: flex-end; justify-content: center; padding: 12px; z-index: 100; }
+    .modal-content { width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; background: #0f172a; border: 1px solid #334155; border-radius: 28px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
+    @keyframes led-blink { 0%, 100% { opacity: 0.35; filter: drop-shadow(0 0 2px #f59e0b); } 50% { opacity: 1; filter: drop-shadow(0 0 8px #fbbf24); } }
+    .anim-led { animation: led-blink 1.2s ease-in-out infinite; }
+  </style>
 </head>
-<body>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
 
-<header class="sticky top-0 z-40 bg-slate-900/95 border-b border-slate-800 p-4 flex justify-between items-center">
- <div class="flex items-center gap-3">
-  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xl">✨</div>
-  <div>
-   <h1 class="font-black text-lg text-purple-300">STICKER SHOP</h1>
-   <p class="text-xs text-slate-400">Коллекционные карточки</p>
-  </div>
- </div>
- <button onclick="openCart()" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2">🛒 <span id="cart-count">0</span></button>
-</header>
-
-<main class="max-w-md mx-auto p-4 pb-28">
- <div class="rounded-2xl p-5 mb-5 bg-gradient-to-r from-purple-900 to-pink-900 border border-purple-500/30">
-  <p class="text-xs text-purple-200">WELCOME TO</p>
-  <h2 class="text-2xl font-black my-2">Sticker Shop 💎</h2>
-  <p class="text-xs text-slate-200">Собирай редкие карточки и создавай свою коллекцию!</p>
- </div>
-
- <input id="search" type="search" placeholder="🔎 Найти карточку..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm outline-none mb-4">
-
- <div class="flex gap-2 overflow-x-auto pb-3 mb-3">
-  <button class="filter-btn bg-purple-600 px-3 py-2 rounded-xl text-xs whitespace-nowrap" onclick="setFilter('ALL',this)">Все</button>
-  <button class="filter-btn bg-slate-800 px-3 py-2 rounded-xl text-xs whitespace-nowrap" onclick="setFilter('COMMON',this)">COMMON</button>
-  <button class="filter-btn bg-slate-800 px-3 py-2 rounded-xl text-xs whitespace-nowrap" onclick="setFilter('RARE',this)">RARE</button>
-  <button class="filter-btn bg-slate-800 px-3 py-2 rounded-xl text-xs whitespace-nowrap" onclick="setFilter('HOLO RARE',this)">HOLO RARE</button>
-  <button class="filter-btn bg-slate-800 px-3 py-2 rounded-xl text-xs whitespace-nowrap" onclick="setFilter('ULTRA RARE',this)">ULTRA RARE</button>
-  <button class="filter-btn bg-slate-800 px-3 py-2 rounded-xl text-xs whitespace-nowrap" onclick="setFilter('SECRET',this)">SECRET</button>
- </div>
-
- <div class="flex justify-between mb-3">
-  <h2 class="font-bold text-sm">КОЛЛЕКЦИЯ</h2>
-  <span class="text-xs text-amber-400">Оплата USDT</span>
- </div>
- <div id="products" class="grid grid-cols-2 gap-3"></div>
- <p id="no-results" class="hidden text-center text-slate-500 py-8">Карточки не найдены</p>
-</main>
-
-<div class="fixed bottom-0 left-0 right-0 z-30 p-3 bg-slate-950/95 border-t border-slate-800">
- <div class="max-w-md mx-auto">
-  <button onclick="openCart()" class="w-full rounded-xl p-3 bg-gradient-to-r from-purple-600 to-pink-600 flex justify-between font-bold">
-   <span>🛒 Корзина (<span id="bottom-count">0</span>)</span>
-   <span id="bottom-total">$0.00 USDT</span>
-  </button>
- </div>
-</div>
-
-<!-- КОРЗИНА -->
-<div id="cart-modal" class="modal hidden">
- <div class="modal-box">
-  <div class="flex justify-between items-center mb-4">
-   <h2 class="text-lg font-bold">🛒 Моя корзина</h2>
-   <button onclick="closeCart()" class="text-2xl text-slate-400">×</button>
-  </div>
-  <div id="cart-items" class="space-y-3 mb-4"></div>
-  <div id="empty-cart" class="hidden text-center text-slate-400 py-6">Корзина пока пустая</div>
-  <div class="border-t border-slate-700 pt-4">
-   <div class="flex justify-between font-bold mb-4">
-    <span>Итого:</span>
-    <span id="cart-total" class="text-amber-400">$0.00 USDT</span>
-   </div>
-   <button id="checkout" onclick="checkout()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-3 font-bold">Перейти к оплате</button>
-   <button onclick="clearCart()" class="w-full text-slate-400 text-xs py-3">Очистить корзину</button>
-  </div>
- </div>
-</div>
-
-<!-- ОПЛАТА -->
-<div id="payment-modal" class="modal hidden" style="z-index:60">
- <div class="modal-box">
-  <div class="text-center mb-4">
-   <div class="text-4xl mb-2">💎</div>
-   <h2 class="text-xl font-bold">Оплата заказа</h2>
-   <p class="text-xs text-slate-400 mt-2">Сумма заказа:</p>
-   <p id="payment-total" class="text-2xl font-black text-amber-400">$0.00 USDT</p>
-  </div>
-  <div class="bg-slate-950 border border-slate-700 rounded-xl p-3 mb-3">
-   <p class="text-xs text-slate-400 mb-2">Адрес кошелька TON:</p>
-   <p id="wallet-address" class="text-xs break-all font-mono text-purple-300">UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd</p>
-  </div>
-  <button onclick="openWallet()" class="w-full bg-emerald-600 rounded-xl p-3 font-bold mb-2">🚀 Открыть Tonkeeper</button>
-  <button onclick="copyAddress()" class="w-full bg-purple-600 rounded-xl p-3 font-bold mb-2">📋 Скопировать адрес</button>
-  <button onclick="copyPayLink()" class="w-full bg-slate-800 rounded-xl p-3 text-sm mb-2">🔗 Скопировать ссылку</button>
-  <button onclick="closePayment()" class="w-full text-slate-300 text-sm py-3">Вернуться к корзине</button>
-  <p class="text-[10px] text-slate-500 text-center">После перевода сохраните подтверждение платежа. Автоматическая проверка оплаты пока не подключена.</p>
- </div>
-</div>
-
-<script>
-const tg = window.Telegram?.WebApp;
-if(tg){tg.ready();tg.expand();}
-
-const wallet = "UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd";
-const payLink = "https://app.tonkeeper.com/transfer/" + wallet;
-
-const products = [
-{id:1,name:"Cyber Cat",rarity:"COMMON",price:.99,icon:"🐱"},
-{id:2,name:"Crypto Pepe",rarity:"SECRET",price:2.99,icon:"🐸"},
-{id:3,name:"Capybara Zen",rarity:"RARE",price:1.49,icon:"🦫"},
-{id:4,name:"Cyber Ninja",rarity:"HOLO RARE",price:1.99,icon:"🥷"},
-{id:5,name:"Shiba Drip",rarity:"RARE",price:1.49,icon:"🐕"},
-{id:6,name:"Retro Boss",rarity:"COMMON",price:.99,icon:"👾"},
-{id:7,name:"Pixel Duck",rarity:"COMMON",price:.99,icon:"🦆"},
-{id:8,name:"Anime Chibi",rarity:"HOLO RARE",price:1.99,icon:"👸"},
-{id:9,name:"Cosmo Doge",rarity:"COMMON",price:.99,icon:"🐶"},
-{id:10,name:"Neon Fox",rarity:"RARE",price:1.49,icon:"🦊"},
-{id:11,name:"Neo Dragon",rarity:"ULTRA RARE",price:2.49,icon:"🐉"},
-{id:12,name:"Code Master",rarity:"RARE",price:1.49,icon:"💻"},
-{id:13,name:"Zen Panda",rarity:"COMMON",price:.99,icon:"🐼"},
-{id:14,name:"Flame Degen",rarity:"SECRET",price:2.99,icon:"🔥"},
-{id:15,name:"Cool Guy",rarity:"COMMON",price:.99,icon:"😎"},
-{id:16,name:"Cyber Bot",rarity:"RARE",price:1.49,icon:"🤖"},
-{id:17,name:"Wizard Arcane",rarity:"HOLO RARE",price:1.99,icon:"🧙"},
-{id:18,name:"Magic Kawaii",rarity:"ULTRA RARE",price:2.49,icon:"✨"},
-{id:19,name:"Skull Laugh",rarity:"COMMON",price:.99,icon:"💀"},
-{id:20,name:"Coffee Rush",rarity:"COMMON",price:.99,icon:"☕"}
-];
-
-const rarityColors = {
-"COMMON":"text-slate-300",
-"RARE":"text-cyan-400",
-"HOLO RARE":"text-purple-400",
-"ULTRA RARE":"text-pink-400",
-"SECRET":"text-amber-400"
-};
-
-const rarityBackground = {
-"COMMON":"from-slate-700 to-slate-900",
-"RARE":"from-cyan-900 to-slate-900",
-"HOLO RARE":"from-purple-800 to-indigo-950",
-"ULTRA RARE":"from-pink-800 to-purple-950",
-"SECRET":"from-amber-800 to-red-950"
-};
-
-let cart = [];
-try {
- cart = JSON.parse(localStorage.getItem("sticker_shop_cart") || "[]");
- if(!Array.isArray(cart)) cart = [];
-} catch(e) { cart = []; }
-
-cart = cart.map(item=>{
- const p = products.find(x=>x.id===Number(item.id));
- return p ? {...p,quantity:Math.max(1,Number(item.quantity)||1)} : null;
-}).filter(Boolean);
-
-let currentFilter = "ALL";
-
-function money(value){
- return "$" + value.toFixed(2) + " USDT";
-}
-
-function totalPrice(){
- return cart.reduce((sum,item)=>sum+item.price*item.quantity,0);
-}
-
-function saveCart(){
- localStorage.setItem("sticker_shop_cart",JSON.stringify(cart));
-}
-
-function renderProducts(){
- const search = document.getElementById("search").value.toLowerCase().trim();
- const list = products.filter(p=>{
-  const rarityOK = currentFilter==="ALL" || p.rarity===currentFilter;
-  const searchOK = p.name.toLowerCase().includes(search) || p.rarity.toLowerCase().includes(search);
-  return rarityOK && searchOK;
- });
-
- const container = document.getElementById("products");
- container.innerHTML = "";
- document.getElementById("no-results").classList.toggle("hidden",list.length!==0);
-
- list.forEach(p=>{
-  const item = document.createElement("div");
-  item.className = "card bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden";
-  item.innerHTML = `
-   <div class="h-32 bg-gradient-to-br ${rarityBackground[p.rarity]} flex items-center justify-center relative">
-    <span class="text-7xl drop-shadow-lg">${p.icon}</span>
-    <span class="absolute top-2 right-2 text-[9px] bg-black/40 rounded-lg px-2 py-1 ${rarityColors[p.rarity]}">${p.rarity}</span>
-   </div>
-   <div class="p-3">
-    <h3 class="font-bold text-sm truncate">${p.name}</h3>
-    <div class="flex justify-between items-center mt-2 mb-3">
-     <span class="text-amber-400 font-bold text-sm">${money(p.price)}</span>
+  <!-- Шапка -->
+  <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 p-3.5 flex justify-between items-center shadow-lg">
+    <div class="flex items-center gap-2.5">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-pink-500 to-purple-600 flex items-center justify-center text-xl shadow-lg">🎰</div>
+      <div>
+        <h1 class="font-black text-base bg-gradient-to-r from-amber-300 via-pink-400 to-purple-400 bg-clip-text text-transparent leading-none">CRYPTO SPIN</h1>
+        <p class="text-[10px] text-slate-400 font-medium">Крипто-колесо фортуны + Стикеры</p>
+      </div>
     </div>
-    <button onclick="addToCart(${p.id})" class="w-full rounded-xl py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-bold">＋ В корзину</button>
-   </div>`;
-  container.appendChild(item);
- });
-}
+    <div class="flex items-center gap-2">
+      <button onclick="openWithdrawModal()" class="bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 px-2.5 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition cursor-pointer">💳 Вывод</button>
+      <button onclick="openCart()" class="relative bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
+        <span>🛒</span>
+        <span id="cart-badge-count" class="bg-pink-500 text-white text-[11px] px-1.5 py-0.2 rounded-full font-bold">0</span>
+      </button>
+    </div>
+  </header>
 
-function setFilter(rarity,button){
- currentFilter = rarity;
- document.querySelectorAll(".filter-btn").forEach(b=>{
-  b.classList.remove("bg-purple-600");
-  b.classList.add("bg-slate-800");
- });
- button.classList.remove("bg-slate-800");
- button.classList.add("bg-purple-600");
- renderProducts();
-}
+  <!-- Вкладки -->
+  <div class="flex border-b border-slate-800 bg-slate-900/70 sticky top-[63px] z-30 backdrop-blur-md">
+    <button id="tab-btn-spin" class="flex-1 py-3 text-xs font-black tab-active transition flex items-center justify-center gap-1.5 cursor-pointer" onclick="showTab('spin')">
+      <span>🎰</span><span>Крипто-Спин</span>
+      <span id="tab-spins-count" class="bg-amber-400 text-slate-950 text-[10px] px-1.5 py-0.5 rounded-full font-black">5</span>
+    </button>
+    <button id="tab-btn-shop" class="flex-1 py-3 text-xs font-black text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer" onclick="showTab('shop')">
+      <span>🛍️</span><span>Магазин стикеров</span>
+      <span class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-md">20</span>
+    </button>
+  </div>
 
-function addToCart(id){
- const product = products.find(p=>p.id===id);
- if(!product) return;
- const found = cart.find(p=>p.id===id);
- if(found) found.quantity++;
- else cart.push({...product,quantity:1});
- saveCart();
- updateCart();
- if(tg) tg.HapticFeedback?.notificationOccurred("success");
-}
+  <!-- Вкладка 1: Колесо Спинов -->
+  <main id="spin-section" class="max-w-md mx-auto p-4 pb-24 w-full flex-1 space-y-4">
+    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl px-3 py-2 flex items-center justify-between text-xs shadow-inner">
+      <div class="flex items-center gap-1.5 text-slate-400 text-[11px]">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span class="font-semibold text-slate-300">Live выигрыш:</span>
+      </div>
+      <div id="live-feed-ticker" class="flex items-center gap-1 font-bold truncate">
+        <span class="text-slate-300">@alex_crypto</span> <span class="text-blue-400">💎 2.5 TON</span>
+      </div>
+    </div>
 
-function changeQuantity(id,delta){
- const item = cart.find(p=>p.id===id);
- if(!item) return;
- item.quantity += delta;
- if(item.quantity<=0) cart = cart.filter(p=>p.id!==id);
- saveCart();
- updateCart();
-}
+    <!-- Баланс криптовалют -->
+    <div class="grid grid-cols-4 gap-2 text-center">
+      <div class="bg-slate-900 border border-blue-500/30 rounded-2xl p-2 shadow">
+        <div class="text-base">💎</div>
+        <div id="bal-ton" class="text-xs font-black text-blue-400 font-mono mt-0.5">0.00</div>
+        <div class="text-[9px] text-slate-400 font-bold uppercase">TON</div>
+      </div>
+      <div class="bg-slate-900 border border-emerald-500/30 rounded-2xl p-2 shadow">
+        <div class="text-base">💵</div>
+        <div id="bal-usdt" class="text-xs font-black text-emerald-400 font-mono mt-0.5">0.00</div>
+        <div class="text-[9px] text-slate-400 font-bold uppercase">USDT</div>
+      </div>
+      <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-2 shadow">
+        <div class="text-base">⚡</div>
+        <div id="bal-not" class="text-xs font-black text-amber-400 font-mono mt-0.5">0</div>
+        <div class="text-[9px] text-slate-400 font-bold uppercase">NOT</div>
+      </div>
+      <div class="bg-slate-900 border border-orange-500/30 rounded-2xl p-2 shadow">
+        <div class="text-base">🐶</div>
+        <div id="bal-dogs" class="text-xs font-black text-orange-400 font-mono mt-0.5">0</div>
+        <div class="text-[9px] text-slate-400 font-bold uppercase">DOGS</div>
+      </div>
+    </div>
 
-function clearCart(){
- cart = [];
- saveCart();
- updateCart();
-}
+    <!-- КОЛЕСО -->
+    <div class="bg-gradient-to-b from-slate-900 via-purple-950/30 to-slate-950 border border-purple-500/30 rounded-3xl p-4 shadow-2xl relative flex flex-col items-center">
+      <!-- Стрелка-указатель сверху -->
+      <div class="z-30 -mb-4 drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] pointer-events-none">
+        <div class="w-8 h-8 bg-gradient-to-b from-amber-300 to-amber-500 rotate-45 rounded-sm border-2 border-white shadow-xl flex items-center justify-center">
+          <div class="w-3 h-3 bg-pink-600 rounded-full"></div>
+        </div>
+      </div>
 
-function updateCart(){
- const count = cart.reduce((s,p)=>s+p.quantity,0);
- const total = totalPrice();
- document.getElementById("cart-count").textContent = count;
- document.getElementById("bottom-count").textContent = count;
- document.getElementById("bottom-total").textContent = money(total);
- document.getElementById("cart-total").textContent = money(total);
+      <!-- Контейнер вращения колеса -->
+      <div class="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center my-2">
+        <div id="led-container" class="absolute inset-0 rounded-full border-4 border-amber-400/80 shadow-[0_0_25px_rgba(245,158,11,0.4)] pointer-events-none z-20 flex items-center justify-center"></div>
+        <div id="wheel-rotor" class="w-full h-full rounded-full overflow-hidden shadow-inner flex items-center justify-center" style="transform: rotate(0deg);">
+          <canvas id="wheel-canvas" width="600" height="600" class="w-full h-full block select-none"></canvas>
+        </div>
+        <button id="center-spin-btn" onclick="triggerSpinAction()" class="absolute z-20 w-20 h-20 rounded-full bg-gradient-to-b from-amber-300 via-pink-500 to-purple-700 p-1 shadow-[0_0_20px_rgba(236,72,153,0.6)] active:scale-95 transition cursor-pointer">
+          <div class="w-full h-full rounded-full bg-slate-950 flex flex-col items-center justify-center border-2 border-amber-300/60">
+            <span class="text-xl">🎰</span>
+            <span class="text-[10px] font-black text-amber-300 uppercase tracking-wider leading-none mt-0.5">SPIN</span>
+          </div>
+        </button>
+      </div>
 
- const container = document.getElementById("cart-items");
- container.innerHTML = "";
- document.getElementById("empty-cart").classList.toggle("hidden",cart.length>0);
- document.getElementById("checkout").disabled = cart.length===0;
- document.getElementById("checkout").classList.toggle("opacity-40",cart.length===0);
+      <!-- Множитель -->
+      <div class="w-full flex items-center justify-between mt-3 pt-3 border-t border-slate-800 text-xs">
+        <span class="text-slate-400 font-semibold text-[11px]">Множитель выигрыша:</span>
+        <div class="flex gap-1.5">
+          <button onclick="setMultiplier(1)" id="btn-mult-1" class="px-3 py-1 rounded-xl font-black text-xs bg-gradient-to-r from-amber-400 to-pink-500 text-slate-950 shadow-md cursor-pointer">x1</button>
+          <button onclick="setMultiplier(2)" id="btn-mult-2" class="px-3 py-1 rounded-xl font-black text-xs bg-slate-800 text-slate-300 cursor-pointer">x2</button>
+          <button onclick="setMultiplier(5)" id="btn-mult-5" class="px-3 py-1 rounded-xl font-black text-xs bg-slate-800 text-slate-300 cursor-pointer">x5</button>
+        </div>
+      </div>
 
- cart.forEach(item=>{
-  const row = document.createElement("div");
-  row.className = "flex items-center gap-3 bg-slate-800 p-3 rounded-xl";
-  row.innerHTML = `
-   <div class="text-3xl">${item.icon}</div>
-   <div class="flex-1 min-w-0">
-    <p class="font-bold text-sm truncate">${item.name}</p>
-    <p class="text-xs text-amber-400">${money(item.price*item.quantity)}</p>
-   </div>
-   <div class="flex items-center gap-2">
-    <button onclick="changeQuantity(${item.id},-1)" class="bg-slate-700 rounded-lg w-7 h-7">−</button>
-    <span class="text-sm">${item.quantity}</span>
-    <button onclick="changeQuantity(${item.id},1)" class="bg-slate-700 rounded-lg w-7 h-7">＋</button>
-   </div>`;
-  container.appendChild(row);
- });
-}
+      <!-- Кнопка КРУТИТЬ -->
+      <button id="main-spin-btn" onclick="triggerSpinAction()" class="w-full mt-3.5 py-4 rounded-2xl font-black text-base shadow-2xl flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 hover:from-amber-300 hover:to-purple-500 text-slate-950 shadow-[0_8px_25px_rgba(236,72,153,0.4)] active:scale-98 transition cursor-pointer">
+        <span>🔥</span>
+        <span id="main-spin-label">КРУТИТЬ (1 спин)</span>
+        <span id="main-spins-left" class="text-xs bg-black/20 px-2 py-0.5 rounded-full text-slate-900">Осталось: 5</span>
+      </button>
+    </div>
 
-function openCart(){
- updateCart();
- document.getElementById("payment-modal").classList.add("hidden");
- document.getElementById("cart-modal").classList.remove("hidden");
-}
+    <!-- Таймер и рефералы -->
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-col justify-between shadow-md">
+        <div>
+          <div class="flex items-center gap-1.5 text-amber-300 font-bold text-xs">🎁 <span>Таймер +1 Спин</span></div>
+          <div class="text-[10px] text-slate-400 mt-1">Каждые 2 часа бесплатно!</div>
+        </div>
+        <button id="timer-claim-btn" onclick="claimFreeSpinTimer()" class="mt-2.5 w-full bg-slate-800 text-amber-300 text-xs font-mono font-bold py-1.5 rounded-xl border border-amber-400/20 active:scale-95 transition cursor-pointer">02:00:00</button>
+      </div>
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-col justify-between shadow-md">
+        <div>
+          <div class="flex items-center gap-1.5 text-purple-300 font-bold text-xs">👥 <span>+3 Спина за друга</span></div>
+          <div class="text-[10px] text-slate-400 mt-1">Приглашено: <b id="referral-val" class="text-amber-300">0</b> чел.</div>
+        </div>
+        <button onclick="inviteFriend()" class="mt-2.5 w-full bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold py-1.5 rounded-xl shadow active:scale-95 transition cursor-pointer">Позвать друга ↗</button>
+      </div>
+    </div>
 
-function closeCart(){
- document.getElementById("cart-modal").classList.add("hidden");
-}
+    <!-- Пакеты спинов баннер -->
+    <div class="bg-gradient-to-r from-amber-500/15 via-pink-500/15 to-purple-500/15 border border-amber-500/30 rounded-2xl p-3.5 flex justify-between items-center shadow-lg">
+      <div>
+        <h3 class="font-black text-xs text-amber-300 flex items-center gap-1.5">
+          <span>💎 ПАКЕТЫ СПИНОВ</span>
+          <span class="bg-pink-500/20 text-pink-300 text-[9px] px-1.5 py-0.2 rounded-full border border-pink-500/30">ОТ 0.5 USDT</span>
+        </h3>
+        <p class="text-[10px] text-slate-400">Stars или USDT (TON кошелек)</p>
+      </div>
+      <button onclick="openBuySpinsModal()" class="bg-gradient-to-r from-amber-400 to-pink-500 text-slate-950 font-black text-xs px-3.5 py-2 rounded-xl shadow active:scale-95 transition cursor-pointer">Купить спины 🔥</button>
+    </div>
+  </main>
 
-function checkout(){
- if(cart.length===0) return;
- document.getElementById("payment-total").textContent = money(totalPrice());
- document.getElementById("cart-modal").classList.add("hidden");
- document.getElementById("payment-modal").classList.remove("hidden");
-}
+  <!-- Вкладка 2: Магазин стикеров -->
+  <main id="shop-section" class="max-w-md mx-auto p-4 pb-28 w-full flex-1 space-y-4" style="display: none;">
+    <input id="search-input" type="search" placeholder="Поиск стикеров..." oninput="handleSearch(this.value)"
+      class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-purple-500 transition shadow-inner">
+    <div class="flex justify-between items-center text-xs">
+      <span id="catalog-count-label" class="font-semibold text-slate-300">Каталог стикеров (20)</span>
+      <span class="text-amber-400 font-semibold bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">55–120 ⭐</span>
+    </div>
+    <div id="products-grid" class="grid grid-cols-2 gap-3"></div>
+  </main>
 
-function closePayment(){
- document.getElementById("payment-modal").classList.add("hidden");
- if(cart.length>0){
-  document.getElementById("cart-modal").classList.remove("hidden");
- }
-}
+  <!-- Плавающая плашка корзины в магазине -->
+  <div id="floating-cart-bar" class="fixed bottom-0 left-0 right-0 p-3 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 z-30" style="display: none;">
+    <div class="max-w-md mx-auto">
+      <button onclick="openCart()" class="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 text-white font-bold p-3.5 rounded-2xl flex justify-between items-center shadow-2xl active:scale-98 transition cursor-pointer">
+        <div class="flex items-center gap-2">
+          <span>🛒 КОРЗИНА</span>
+          <span id="bar-cart-count" class="bg-white/20 text-white text-xs px-2 py-0.5 rounded-full font-mono">0</span>
+        </div>
+        <div class="flex items-center gap-1 font-mono font-black text-amber-300 text-base">
+          <span id="bar-cart-total">0</span> <span>⭐</span>
+        </div>
+      </button>
+    </div>
+  </div>
 
-function openWallet(){
- window.open(payLink,"_blank");
-}
+  <!-- Модалки -->
+  <div id="win-modal" class="modal-backdrop">
+    <div class="modal-content text-center border-2 border-amber-400/80 shadow-[0_0_50px_rgba(245,158,11,0.5)]">
+      <div id="win-modal-icon" class="text-6xl mb-2 animate-bounce">🎰</div>
+      <div class="text-xs font-black text-amber-400 uppercase tracking-widest">ПОЗДРАВЛЯЕМ! ВЫ ВЫИГРАЛИ!</div>
+      <h2 id="win-modal-title" class="text-2xl font-black text-white mt-1">2.5 TON</h2>
+      <p id="win-modal-desc" class="text-xs text-slate-400 mt-1">Награда начислена на ваш баланс.</p>
+      <button onclick="closeWinModal()" class="mt-5 w-full bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 text-slate-950 font-black py-3.5 rounded-2xl shadow-xl active:scale-95 transition cursor-pointer">ЗАБРАТЬ ВЫИГРЫШ 💰</button>
+    </div>
+  </div>
 
-async function copyText(text){
- try{
-  await navigator.clipboard.writeText(text);
-  alert("Скопировано!");
- }catch(e){
-  prompt("Скопируйте текст:",text);
- }
-}
+  <div id="buy-modal" class="modal-backdrop">
+    <div class="modal-content space-y-4">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+        <div class="flex items-center gap-2"><span class="text-xl">🎰</span><h2 class="font-black text-base text-white">Пакеты Спинов</h2></div>
+        <button onclick="closeBuySpinsModal()" class="text-2xl text-slate-400 hover:text-white leading-none cursor-pointer">&times;</button>
+      </div>
+      <p class="text-xs text-slate-400">Пополняйте спины через Telegram Stars или USDT на TON кошелек:</p>
+      <div id="buy-packages-list" class="space-y-2.5"></div>
+      <div class="border-t border-slate-800 pt-3 text-[11px] space-y-2">
+        <div class="text-slate-400">Прямой перевод USDT (TON сеть):</div>
+        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 font-mono text-[10px] text-slate-300 break-all select-all flex justify-between items-center gap-2">
+          <span>UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd</span>
+          <button onclick="copyWalletAddress()" class="bg-purple-600 px-2 py-1 rounded text-white text-[10px] font-bold cursor-pointer">Копировать</button>
+        </div>
+        <button onclick="openTonkeeperPay()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs shadow transition active:scale-95 cursor-pointer">Оплатить в Tonkeeper ↗</button>
+      </div>
+    </div>
+  </div>
 
-function copyAddress(){
- copyText(wallet);
-}
+  <div id="withdraw-modal" class="modal-backdrop">
+    <div class="modal-content space-y-4">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+        <div class="flex items-center gap-2"><span class="text-xl">💳</span><h2 class="font-black text-base text-white">Вывод криптовалюты</h2></div>
+        <button onclick="closeWithdrawModal()" class="text-2xl text-slate-400 hover:text-white leading-none cursor-pointer">&times;</button>
+      </div>
+      <div class="bg-emerald-950/40 border border-emerald-500/30 rounded-2xl p-3 text-xs space-y-1">
+        <div class="text-emerald-300 font-bold">Доступно к выводу:</div>
+        <div class="flex justify-between font-mono text-sm font-black text-white">
+          <span id="withdraw-ton-avail">💎 0.00 TON</span>
+          <span id="withdraw-usdt-avail">💵 0.00 USDT</span>
+        </div>
+        <div class="text-[10px] text-slate-400 pt-1">Минимальный порог: 0.5 TON или 1.0 USDT.</div>
+      </div>
+      <form onsubmit="handleWithdrawalSubmit(event)" class="space-y-3">
+        <div>
+          <label class="text-slate-400 text-xs block mb-1">Ваш адрес TON кошелька:</label>
+          <input id="withdraw-address-input" type="text" required placeholder="UQ... или EQ... (Tonkeeper / Wallet)"
+            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500 font-mono">
+        </div>
+        <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-black py-3 rounded-xl shadow-lg active:scale-95 transition cursor-pointer">Запросить выплату ✓</button>
+      </form>
+    </div>
+  </div>
 
-function copyPayLink(){
- copyText(payLink);
-}
+  <div id="cart-modal" class="modal-backdrop">
+    <div class="modal-content space-y-4">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+        <div class="flex items-center gap-2"><span class="text-xl">🛒</span><h2 class="font-black text-base text-white">Ваша корзина</h2></div>
+        <button onclick="closeCart()" class="text-2xl text-slate-400 hover:text-white leading-none cursor-pointer">&times;</button>
+      </div>
+      <div id="cart-items-list" class="space-y-2 max-h-[50vh] overflow-y-auto pr-1"></div>
+      <div class="border-t border-slate-800 pt-3 space-y-2">
+        <div class="flex justify-between items-center text-sm font-bold">
+          <span class="text-slate-300">Итого к оплате:</span>
+          <span id="cart-modal-total" class="text-amber-400 font-mono text-lg font-black">0 ⭐</span>
+        </div>
+        <button onclick="checkoutCartStars()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition cursor-pointer">Оплатить через Stars ⭐</button>
+      </div>
+    </div>
+  </div>
 
-document.getElementById("search").addEventListener("input",renderProducts);
+  <script>
+    var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
 
-document.getElementById("cart-modal").addEventListener("click",function(e){
- if(e.target===this) closeCart();
-});
+    function haptic(type) {
+      try {
+        if (tg && tg.HapticFeedback) {
+          if (type === "heavy") tg.HapticFeedback.impactOccurred("heavy");
+          else if (type === "light") tg.HapticFeedback.impactOccurred("light");
+          else tg.HapticFeedback.impactOccurred("medium");
+        }
+      } catch (e) {}
+    }
 
-document.getElementById("payment-modal").addEventListener("click",function(e){
- if(e.target===this) closePayment();
-});
+    var USDT_WALLET = "UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd";
+    var TONKEEPER_URL = "https://app.tonkeeper.com/transfer/" + USDT_WALLET;
+    var BASE_IMG_URL = "https://kovunov155-debug.github.io/Stickerchop./";
 
-renderProducts();
-updateCart();
-</script>
+    var SECTORS = [
+      { id: 0, label: "0.5 TON", sublabel: "TON Coin", type: "ton", amountTon: 0.5, icon: "💎", color: "#0284c7" },
+      { id: 1, label: "1.0 USDT", sublabel: "Tether USD", type: "usdt", amountUsdt: 1.0, icon: "💵", color: "#059669" },
+      { id: 2, label: "1,000 NOT", sublabel: "Notcoin", type: "not", amountNot: 1000, icon: "⚡", color: "#d97706" },
+      { id: 3, label: "+3 СПИНА", sublabel: "Удача x3", type: "spins", amountSpins: 3, icon: "🎁", color: "#7c3aed" },
+      { id: 4, label: "5,000 DOGS", sublabel: "DOGS Coin", type: "dogs", amountDogs: 5000, icon: "🐶", color: "#ea580c" },
+      { id: 5, label: "2.5 TON", sublabel: "Супер TON", type: "ton", amountTon: 2.5, icon: "💎", color: "#2563eb" },
+      { id: 6, label: "5.0 USDT", sublabel: "Big USDT", type: "usdt", amountUsdt: 5.0, icon: "💵", color: "#10b981" },
+      { id: 7, label: "ДЖЕКПОТ!", sublabel: "10 TON + 25 USDT", type: "jackpot", amountTon: 10, amountUsdt: 25, icon: "🎰", color: "#ec4899" }
+    ];
+
+    var SPIN_PACKAGES = [
+      { id: "spins_3", name: "3 Спина", count: 3, priceStars: 15, priceUsdt: 0.5, bonus: "", icon: "🎲" },
+      { id: "spins_10", name: "10 Спинов (+2 БОНУС)", count: 12, priceStars: 45, priceUsdt: 1.5, bonus: "+2 Бесплатно", icon: "🔥" },
+      { id: "spins_30", name: "30 Спинов (+10 БОНУС)", count: 40, priceStars: 120, priceUsdt: 4.0, bonus: "+10 Бесплатно", icon: "💎" },
+      { id: "spins_100", name: "100 Спинов (VIP КИТ)", count: 140, priceStars: 350, priceUsdt: 10.0, bonus: "+40 Бесплатно", icon: "👑" }
+    ];
+
+    var LIVE_WINS = [
+      { user: "@alex_crypto", prize: "2.5 TON", color: "text-blue-400" },
+      { user: "@ton_whale", prize: "10,000 DOGS", color: "text-orange-400" },
+      { user: "@satoshi_99", prize: "5.0 USDT", color: "text-emerald-400" },
+      { user: "@durov_fan", prize: "1,000 NOT", color: "text-amber-400" },
+      { user: "@lucky_cat", prize: "🎰 ДЖЕКПОТ 10 TON!", color: "text-pink-400" },
+      { user: "@crypto_ivan", prize: "1.0 USDT", color: "text-emerald-400" }
+    ];
+
+    var PRODUCTS = [
+      { id: 1, name: "Bitcoin", price: 120, img: BASE_IMG_URL + "grok_1793863248535.jpg", emoji: "₿", rarity: "SECRET" },
+      { id: 2, name: "Pepe", price: 80, img: BASE_IMG_URL + "grok_1793863263231.jpg", emoji: "🐸", rarity: "ULTRA RARE" },
+      { id: 3, name: "Solana", price: 95, img: BASE_IMG_URL + "grok_1793863828992.png", emoji: "☀️", rarity: "HOLO RARE" },
+      { id: 4, name: "Pepe 2", price: 75, img: BASE_IMG_URL + "grok_1793863836019.png", emoji: "🐸", rarity: "HOLO RARE" },
+      { id: 5, name: "Sticker 5", price: 60, img: BASE_IMG_URL + "grok_1793863841233.png", emoji: "🦫", rarity: "RARE" },
+      { id: 6, name: "Sticker 6", price: 70, img: BASE_IMG_URL + "grok_1793873660861.jpg", emoji: "🥷", rarity: "RARE" },
+      { id: 7, name: "Sticker 7", price: 65, img: BASE_IMG_URL + "grok_1793873671190.jpg", emoji: "🐕", rarity: "RARE" },
+      { id: 8, name: "Sticker 8", price: 65, img: BASE_IMG_URL + "grok_1793873671687.jpg", emoji: "👾", rarity: "RARE" },
+      { id: 9, name: "Sticker 9", price: 55, img: BASE_IMG_URL + "grok_1793873675421.jpg", emoji: "🦆", rarity: "COMMON" },
+      { id: 10, name: "Sticker 10", price: 70, img: BASE_IMG_URL + "grok_1793873678612.jpg", emoji: "👸", rarity: "RARE" },
+      { id: 11, name: "Sticker 11", price: 55, img: BASE_IMG_URL + "grok_1793873682610.jpg", emoji: "🐶", rarity: "COMMON" },
+      { id: 12, name: "Sticker 12", price: 65, img: BASE_IMG_URL + "grok_1793873686205.jpg", emoji: "🦊", rarity: "RARE" },
+      { id: 13, name: "Sticker 13", price: 85, img: BASE_IMG_URL + "grok_1793873690727.jpg", emoji: "🐉", rarity: "HOLO RARE" },
+      { id: 14, name: "Sticker 14", price: 75, img: BASE_IMG_URL + "grok_1793873695295.jpg", emoji: "🧑‍💻", rarity: "RARE" },
+      { id: 15, name: "Sticker 15", price: 60, img: BASE_IMG_URL + "grok_1793873698083.jpg", emoji: "🐼", rarity: "COMMON" },
+      { id: 16, name: "Sticker 16", price: 70, img: BASE_IMG_URL + "grok_1793873701177.jpg", emoji: "🔥", rarity: "RARE" },
+      { id: 17, name: "Sticker 17", price: 60, img: BASE_IMG_URL + "grok_1793873703898.jpg", emoji: "😎", rarity: "COMMON" },
+      { id: 18, name: "Sticker 18", price: 75, img: BASE_IMG_URL + "grok_1793873708158.jpg", emoji: "🤖", rarity: "RARE" },
+      { id: 19, name: "Sticker 19", price: 80, img: BASE_IMG_URL + "grok_1793873712441.jpg", emoji: "🧙", rarity: "HOLO RARE" },
+      { id: 20, name: "Sticker 20", price: 90, img: BASE_IMG_URL + "grok_1793873715206.jpg", emoji: "✨", rarity: "ULTRA RARE" }
+    ];
+
+    function generateCardSvg(p) {
+      var colors = { COMMON: ["#075985", "#0f172a"], RARE: ["#0891b2", "#164e63"], "HOLO RARE": ["#9333ea", "#312e81"], "ULTRA RARE": ["#db2777", "#701a75"], SECRET: ["#d97706", "#451a03"] };
+      var c = colors[p.rarity] || colors.COMMON;
+      var emoji = p.emoji || "💎";
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">'
+        + '<defs><linearGradient id="bg_' + p.id + '" x1="0" y1="0" x2="1" y2="1"><stop stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient></defs>'
+        + '<rect width="400" height="400" rx="32" fill="url(#bg_' + p.id + ')"/>'
+        + '<circle cx="200" cy="180" r="110" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="4"/>'
+        + '<text x="200" y="225" text-anchor="middle" font-size="115">' + emoji + '</text>'
+        + '<text x="200" y="330" text-anchor="middle" fill="#ffffff" font-size="24" font-weight="bold" font-family="sans-serif">' + p.name + '</text>'
+        + '<text x="200" y="365" text-anchor="middle" fill="#fcd34d" font-size="16" font-weight="bold" font-family="sans-serif">' + p.price + ' ⭐</text>'
+        + '<rect x="10" y="10" width="380" height="380" rx="26" fill="none" stroke="#ffffff" stroke-opacity=".4" stroke-width="3"/>'
+        + '</svg>';
+      return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+    }
+
+    var game = { spins: 5, ton: 0.0, usdt: 0.0, not: 0, dogs: 0, totalSpinsDone: 0, lastFreeSpinClaim: Date.now(), referrals: 0 };
+    try {
+      var savedGame = localStorage.getItem("stick_chop_crypto_game");
+      if (savedGame) {
+        var parsed = JSON.parse(savedGame);
+        if (typeof parsed.spins === "number" && !isNaN(parsed.spins)) game.spins = parsed.spins;
+        if (typeof parsed.ton === "number" && !isNaN(parsed.ton)) game.ton = parsed.ton;
+        if (typeof parsed.usdt === "number" && !isNaN(parsed.usdt)) game.usdt = parsed.usdt;
+        if (typeof parsed.not === "number" && !isNaN(parsed.not)) game.not = parsed.not;
+        if (typeof parsed.dogs === "number" && !isNaN(parsed.dogs)) game.dogs = parsed.dogs;
+        if (typeof parsed.totalSpinsDone === "number") game.totalSpinsDone = parsed.totalSpinsDone;
+        if (typeof parsed.lastFreeSpinClaim === "number") game.lastFreeSpinClaim = parsed.lastFreeSpinClaim;
+        if (typeof parsed.referrals === "number") game.referrals = parsed.referrals;
+      }
+    } catch (e) {}
+
+    function saveGame() {
+      try { localStorage.setItem("stick_chop_crypto_game", JSON.stringify(game)); } catch (e) {}
+    }
+
+    var cart = [];
+    try {
+      var savedCart = localStorage.getItem("stick_chop_cart");
+      if (savedCart) cart = JSON.parse(savedCart);
+    } catch (e) { cart = []; }
+
+    function saveCart() {
+      try { localStorage.setItem("stick_chop_cart", JSON.stringify(cart)); } catch (e) {}
+      updateCartUI();
+    }
+
+    function drawWheelCanvas() {
+      var canvas = document.getElementById("wheel-canvas");
+      if (!canvas) return;
+      var ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      var w = canvas.width;
+      var h = canvas.height;
+      var cx = w / 2;
+      var cy = h / 2;
+      var r = (w / 2) - 10;
+
+      ctx.clearRect(0, 0, w, h);
+      var numSectors = SECTORS.length;
+      var arcAngle = (2 * Math.PI) / numSectors;
+
+      for (var i = 0; i < numSectors; i++) {
+        var sec = SECTORS[i];
+        var startAngle = i * arcAngle - Math.PI / 2;
+        var endAngle = (i + 1) * arcAngle - Math.PI / 2;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, startAngle, endAngle);
+        ctx.closePath();
+
+        var grad = ctx.createRadialGradient(cx, cy, 30, cx, cy, r);
+        if (sec.type === "jackpot") {
+          grad.addColorStop(0, "#f43f5e");
+          grad.addColorStop(0.5, "#ec4899");
+          grad.addColorStop(1, "#d97706");
+        } else {
+          grad.addColorStop(0, sec.color);
+          grad.addColorStop(1, "#0f172a");
+        }
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#0f172a";
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        var midAngle = startAngle + arcAngle / 2;
+        ctx.rotate(midAngle + Math.PI / 2);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        ctx.font = "38px sans-serif";
+        ctx.fillText(sec.icon, 0, -210);
+
+        ctx.font = "900 20px sans-serif";
+        ctx.fillStyle = sec.type === "jackpot" ? "#fef08a" : "#ffffff";
+        ctx.shadowColor = "rgba(0,0,0,0.8)";
+        ctx.shadowBlur = 4;
+        ctx.fillText(sec.label, 0, -168);
+
+        ctx.font = "700 12px sans-serif";
+        ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+        ctx.shadowBlur = 2;
+        ctx.fillText(sec.sublabel, 0, -142);
+        ctx.restore();
+      }
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = "#f59e0b";
+      ctx.stroke();
+
+      var ledBox = document.getElementById("led-container");
+      if (ledBox && ledBox.children.length === 0) {
+        var ledsHtml = "";
+        for (var k = 0; k < 16; k++) {
+          var rot = k * (360 / 16);
+          ledsHtml += '<div class="absolute w-2.5 h-2.5 rounded-full bg-amber-300 anim-led shadow-[0_0_6px_#fbbf24]" style="transform: rotate(' + rot + 'deg) translateY(-140px)"></div>';
+        }
+        ledBox.innerHTML = ledsHtml;
+      }
+    }
+
+    var isSpinning = false;
+    var wheelRotation = 0;
+    var multiplier = 1;
+
+    function setMultiplier(val) {
+      if (isSpinning) return;
+      haptic("light");
+      multiplier = val;
+      var arr = [1, 2, 5];
+      for (var idx = 0; idx < arr.length; idx++) {
+        var m = arr[idx];
+        var b = document.getElementById("btn-mult-" + m);
+        if (b) {
+          if (m === val) {
+            b.className = "px-3 py-1 rounded-xl font-black text-xs bg-gradient-to-r from-amber-400 to-pink-500 text-slate-950 shadow-md cursor-pointer";
+          } else {
+            b.className = "px-3 py-1 rounded-xl font-black text-xs bg-slate-800 text-slate-300 cursor-pointer";
+          }
+        }
+      }
+      updateUI();
+    }
+
+    function triggerSpinAction() {
+      if (isSpinning) return;
+      if (game.spins < multiplier) {
+        haptic("medium");
+        openBuySpinsModal();
+        return;
+      }
+
+      haptic("heavy");
+      isSpinning = true;
+      game.spins -= multiplier;
+      game.totalSpinsDone++;
+      saveGame();
+      updateUI();
+
+      var weights = [18, 16, 16, 12, 14, 10, 10, 4];
+      var totalWeight = 0;
+      for (var wIdx = 0; wIdx < weights.length; wIdx++) totalWeight += weights[wIdx];
+      var rand = Math.random() * totalWeight;
+      var chosenIndex = 0;
+      for (var j = 0; j < weights.length; j++) {
+        if (rand < weights[j]) { chosenIndex = j; break; }
+        rand -= weights[j];
+      }
+
+      var sectorAngle = 360 / SECTORS.length;
+      var targetCenter = chosenIndex * sectorAngle + sectorAngle / 2;
+      var jitter = (Math.random() - 0.5) * (sectorAngle * 0.65);
+      var fullLoops = 360 * (6 + Math.floor(Math.random() * 3));
+      wheelRotation = wheelRotation + fullLoops + (360 - (targetCenter % 360)) + jitter;
+
+      var rotor = document.getElementById("wheel-rotor");
+      if (rotor) {
+        rotor.style.transition = "transform 4.5s cubic-bezier(0.12, 0.8, 0.15, 1)";
+        rotor.style.transform = "rotate(" + wheelRotation + "deg)";
+      }
+
+      var tickDelays = [500, 1100, 1700, 2300, 2900, 3400, 3800, 4100, 4300, 4450];
+      for (var tIdx = 0; tIdx < tickDelays.length; tIdx++) {
+        setTimeout(function() { haptic("light"); }, tickDelays[tIdx]);
+      }
+
+      setTimeout(function() {
+        try {
+          isSpinning = false;
+          var prize = SECTORS[chosenIndex];
+          if (prize.type === "ton") game.ton += prize.amountTon * multiplier;
+          if (prize.type === "usdt") game.usdt += prize.amountUsdt * multiplier;
+          if (prize.type === "not") game.not += prize.amountNot * multiplier;
+          if (prize.type === "dogs") game.dogs += prize.amountDogs * multiplier;
+          if (prize.type === "spins") game.spins += prize.amountSpins * multiplier;
+          if (prize.type === "jackpot") {
+            game.ton += 10 * multiplier;
+            game.usdt += 25 * multiplier;
+          }
+          saveGame();
+          updateUI();
+
+          try {
+            if (typeof window.confetti === "function") {
+              window.confetti({ particleCount: prize.type === "jackpot" ? 120 : 60, spread: 70, origin: { y: 0.6 } });
+            }
+          } catch (e) {}
+
+          showWinModal(prize);
+        } catch (err) {
+          isSpinning = false;
+        }
+      }, 4500);
+    }
+
+    function showWinModal(prize) {
+      document.getElementById("win-modal-icon").textContent = prize.icon;
+      document.getElementById("win-modal-title").textContent = prize.label + (multiplier > 1 ? " (x" + multiplier + ")" : "");
+      document.getElementById("win-modal-desc").textContent = prize.type === "jackpot"
+        ? ("Начислено 10 TON + 25 USDT x" + multiplier + " на ваш баланс!")
+        : "Награда успешно начислена на ваш игровой баланс.";
+      document.getElementById("win-modal").style.display = "flex";
+    }
+
+    function closeWinModal() {
+      document.getElementById("win-modal").style.display = "none";
+    }
+
+    setInterval(function() {
+      var now = Date.now();
+      var twoHoursMs = 2 * 60 * 60 * 1000;
+      var elapsed = now - game.lastFreeSpinClaim;
+      var rem = Math.max(0, twoHoursMs - elapsed);
+      var btn = document.getElementById("timer-claim-btn");
+      if (!btn) return;
+      if (rem === 0) {
+        btn.textContent = "ГОТОВО! ЖМИ +1";
+        btn.className = "mt-2.5 w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-mono font-bold py-1.5 rounded-xl animate-pulse cursor-pointer";
+      } else {
+        var h = Math.floor(rem / 3600000);
+        var m = Math.floor((rem % 3600000) / 60000);
+        var s = Math.floor((rem % 60000) / 1000);
+        var pad = function(n) { return (n < 10 ? "0" : "") + n; };
+        btn.textContent = pad(h) + ":" + pad(m) + ":" + pad(s);
+        btn.className = "mt-2.5 w-full bg-slate-800 text-amber-300 text-xs font-mono font-bold py-1.5 rounded-xl border border-amber-400/20 cursor-pointer";
+      }
+    }, 1000);
+
+    function claimFreeSpinTimer() {
+      var now = Date.now();
+      var twoHoursMs = 2 * 60 * 60 * 1000;
+      if (now - game.lastFreeSpinClaim < twoHoursMs) {
+        alert("Бесплатный спин станет доступен по окончанию таймера!");
+        return;
+      }
+      haptic("heavy");
+      game.spins++;
+      game.lastFreeSpinClaim = now;
+      saveGame();
+      updateUI();
+      alert("Вам начислен +1 бесплатный спин! Удачи! 🎰");
+    }
+
+    function inviteFriend() {
+      haptic("heavy");
+      game.referrals++;
+      game.spins += 3;
+      saveGame();
+      updateUI();
+      var shareText = encodeURIComponent("🎰 Крути крипто-колесо фортуны в Telegram и выигрывай TON, USDT и Notcoin! Дарю 3 бесплатных спина на старте! 💎⚡");
+      var shareUrl = "https://t.me/share/url?url=" + encodeURIComponent(window.location.href) + "&text=" + shareText;
+      if (tg && typeof tg.openTelegramLink === "function") {
+        try { tg.openTelegramLink(shareUrl); return; } catch (e) {}
+      }
+      window.open(shareUrl, "_blank");
+    }
+
+    function updateUI() {
+      document.getElementById("bal-ton").textContent = game.ton.toFixed(2);
+      document.getElementById("bal-usdt").textContent = game.usdt.toFixed(2);
+      document.getElementById("bal-not").textContent = Math.floor(game.not).toLocaleString();
+      document.getElementById("bal-dogs").textContent = Math.floor(game.dogs).toLocaleString();
+      document.getElementById("tab-spins-count").textContent = game.spins;
+      document.getElementById("referral-val").textContent = game.referrals;
+
+      var label = document.getElementById("main-spin-label");
+      var left = document.getElementById("main-spins-left");
+      var mainBtn = document.getElementById("main-spin-btn");
+
+      if (game.spins >= multiplier) {
+        label.textContent = "КРУТИТЬ (" + multiplier + (multiplier === 1 ? " спин" : " спина") + ")";
+        left.textContent = "Осталось: " + game.spins;
+        mainBtn.className = "w-full mt-3.5 py-4 rounded-2xl font-black text-base shadow-2xl flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 hover:from-amber-300 hover:to-purple-500 text-slate-950 shadow-[0_8px_25px_rgba(236,72,153,0.4)] active:scale-98 transition cursor-pointer";
+      } else {
+        label.textContent = "Купить ещё спины 🔥";
+        left.textContent = "0 спинов";
+        mainBtn.className = "w-full mt-3.5 py-4 rounded-2xl font-black text-base shadow-2xl flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white active:scale-98 transition cursor-pointer";
+      }
+
+      document.getElementById("withdraw-ton-avail").textContent = "💎 " + game.ton.toFixed(2) + " TON";
+      document.getElementById("withdraw-usdt-avail").textContent = "💵 " + game.usdt.toFixed(2) + " USDT";
+    }
+
+    function openBuySpinsModal() {
+      haptic("medium");
+      var list = document.getElementById("buy-packages-list");
+      var html = "";
+      for (var i = 0; i < SPIN_PACKAGES.length; i++) {
+        var p = SPIN_PACKAGES[i];
+        html += '<div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 flex justify-between items-center shadow-md">'
+          + '<div class="flex items-center gap-2.5"><span class="text-2xl">' + p.icon + '</span>'
+          + '<div><div class="font-bold text-xs text-white flex items-center gap-1.5"><span>' + p.name + '</span>'
+          + (p.bonus ? '<span class="bg-pink-500/20 text-pink-300 text-[9px] font-bold px-1.5 py-0.2 rounded-full border border-pink-500/30">' + p.bonus + '</span>' : '')
+          + '</div><div class="text-[11px] text-amber-400 font-mono mt-0.5">' + p.priceStars + ' ⭐ или ' + p.priceUsdt + ' USDT</div></div></div>'
+          + '<button onclick="activateSpinsPack(' + i + ')" class="bg-gradient-to-r from-amber-400 to-pink-500 active:scale-95 text-slate-950 font-black text-xs px-3.5 py-2 rounded-xl shadow transition cursor-pointer">Взять</button></div>';
+      }
+      list.innerHTML = html;
+      document.getElementById("buy-modal").style.display = "flex";
+    }
+
+    function closeBuySpinsModal() {
+      document.getElementById("buy-modal").style.display = "none";
+    }
+
+    function activateSpinsPack(idx) {
+      haptic("heavy");
+      var pack = SPIN_PACKAGES[idx];
+      if (!pack) return;
+      game.spins += pack.count;
+      saveGame();
+      updateUI();
+      closeBuySpinsModal();
+      alert('Пакет "' + pack.name + '" успешно активирован! Начислено: +' + pack.count + " спинов! 🎰");
+    }
+
+    function copyWalletAddress() {
+      haptic("light");
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(USDT_WALLET).then(function() { alert("Адрес кошелька скопирован: " + USDT_WALLET); });
+      } else {
+        alert("Кошелек: " + USDT_WALLET);
+      }
+    }
+
+    function openTonkeeperPay() {
+      haptic("heavy");
+      if (tg && typeof tg.openLink === "function") {
+        try { tg.openLink(TONKEEPER_URL); return; } catch (e) {}
+      }
+      window.open(TONKEEPER_URL, "_blank");
+    }
+
+    function openWithdrawModal() {
+      haptic("medium");
+      document.getElementById("withdraw-modal").style.display = "flex";
+    }
+
+    function closeWithdrawModal() {
+      document.getElementById("withdraw-modal").style.display = "none";
+    }
+
+    function handleWithdrawalSubmit(e) {
+      e.preventDefault();
+      var addrInput = document.getElementById("withdraw-address-input");
+      var addr = addrInput ? addrInput.value.trim() : "";
+      if (!addr || addr.length < 10) { alert("Введите корректный адрес кошелька TON!"); return; }
+      if (game.ton < 0.5 && game.usdt < 1.0) { alert("Минимальная сумма для вывода: 0.5 TON или 1.0 USDT!"); return; }
+      haptic("heavy");
+      game.ton = 0;
+      game.usdt = 0;
+      saveGame();
+      updateUI();
+      closeWithdrawModal();
+      alert("Заявка на вывод сформирована! Средства поступят на указанный адрес в сети TON.");
+    }
+
+    function showTab(tab) {
+      haptic("light");
+      var spinSec = document.getElementById("spin-section");
+      var shopSec = document.getElementById("shop-section");
+      var btnSpin = document.getElementById("tab-btn-spin");
+      var btnShop = document.getElementById("tab-btn-shop");
+      var cartBar = document.getElementById("floating-cart-bar");
+
+      if (tab === "spin") {
+        if (spinSec) spinSec.style.display = "block";
+        if (shopSec) shopSec.style.display = "none";
+        if (btnSpin) btnSpin.className = "flex-1 py-3 text-xs font-black tab-active transition flex items-center justify-center gap-1.5 cursor-pointer";
+        if (btnShop) btnShop.className = "flex-1 py-3 text-xs font-black text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer";
+        if (cartBar) cartBar.style.display = "none";
+      } else {
+        if (spinSec) spinSec.style.display = "none";
+        if (shopSec) shopSec.style.display = "block";
+        if (btnSpin) btnSpin.className = "flex-1 py-3 text-xs font-black text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer";
+        if (btnShop) btnShop.className = "flex-1 py-3 text-xs font-black tab-active transition flex items-center justify-center gap-1.5 cursor-pointer";
+        if (cartBar) cartBar.style.display = "block";
+        renderShop();
+      }
+    }
+
+    function handleImgError(el, id) {
+      if (!el) return;
+      el.onerror = null;
+      for (var i = 0; i < PRODUCTS.length; i++) {
+        if (PRODUCTS[i].id === id) { el.src = generateCardSvg(PRODUCTS[i]); break; }
+      }
+    }
+
+    var searchQuery = "";
+    function renderShop() {
+      var grid = document.getElementById("products-grid");
+      if (!grid) return;
+      var q = searchQuery.toLowerCase().trim();
+      var filtered = [];
+      for (var f = 0; f < PRODUCTS.length; f++) {
+        if (!q || PRODUCTS[f].name.toLowerCase().indexOf(q) !== -1) filtered.push(PRODUCTS[f]);
+      }
+      document.getElementById("catalog-count-label").textContent = "Каталог стикеров (" + filtered.length + ")";
+
+      var html = "";
+      for (var idx = 0; idx < filtered.length; idx++) {
+        var p = filtered[idx];
+        var inCart = null;
+        for (var cIdx = 0; cIdx < cart.length; cIdx++) {
+          if (cart[cIdx].id === p.id) { inCart = cart[cIdx]; break; }
+        }
+        var qty = inCart ? inCart.qty : 0;
+        html += '<div class="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition flex flex-col justify-between shadow-md">'
+          + '<div class="relative w-full h-32 bg-slate-950 flex items-center justify-center overflow-hidden">'
+          + '<img src="' + p.img + '" alt="' + p.name + '" class="w-full h-full object-contain" onerror="handleImgError(this, ' + p.id + ')" />'
+          + '<span class="absolute top-2 right-2 bg-black/60 text-[9px] text-slate-300 px-1.5 py-0.5 rounded-md font-bold">' + p.rarity + '</span></div>'
+          + '<div class="p-3"><div class="font-bold text-xs text-white truncate">' + p.name + '</div>'
+          + '<div class="flex justify-between items-center mt-2.5 pt-2 border-t border-slate-800/80">'
+          + '<span class="text-amber-400 font-bold text-xs font-mono">' + p.price + ' ⭐</span>'
+          + '<button onclick="addToCart(' + p.id + ')" class="text-xs px-3 py-1 rounded-lg font-bold transition active:scale-95 shadow cursor-pointer '
+          + (qty > 0 ? "bg-purple-600 text-white ring-1 ring-purple-400" : "bg-purple-600 hover:bg-purple-500 text-white") + '">'
+          + (qty > 0 ? "+" + qty : "+") + '</button></div></div></div>';
+      }
+      grid.innerHTML = html;
+    }
+
+    function handleSearch(val) { searchQuery = val; renderShop(); }
+
+    function addToCart(productId) {
+      haptic("light");
+      var p = null;
+      for (var i = 0; i < PRODUCTS.length; i++) {
+        if (PRODUCTS[i].id === productId) { p = PRODUCTS[i]; break; }
+      }
+      if (!p) return;
+      var exist = null;
+      for (var j = 0; j < cart.length; j++) {
+        if (cart[j].id === productId) { exist = cart[j]; break; }
+      }
+      if (exist) exist.qty++;
+      else cart.push({ id: p.id, name: p.name, price: p.price, emoji: p.emoji, img: p.img, rarity: p.rarity, qty: 1 });
+      saveCart();
+      renderShop();
+    }
+
+    function changeCartQty(productId, delta) {
+      haptic("light");
+      var idx = -1;
+      for (var i = 0; i < cart.length; i++) {
+        if (cart[i].id === productId) { idx = i; break; }
+      }
+      if (idx !== -1) {
+        cart[idx].qty += delta;
+        if (cart[idx].qty <= 0) cart.splice(idx, 1);
+      }
+      saveCart();
+      renderShop();
+      renderCartModal();
+    }
+
+    function updateCartUI() {
+      var count = 0;
+      var totalStars = 0;
+      for (var i = 0; i < cart.length; i++) {
+        count += cart[i].qty;
+        totalStars += cart[i].price * cart[i].qty;
+      }
+      var b = document.getElementById("cart-badge-count");
+      if (b) b.textContent = count;
+      var bc = document.getElementById("bar-cart-count");
+      if (bc) bc.textContent = count;
+      var bt = document.getElementById("bar-cart-total");
+      if (bt) bt.textContent = totalStars;
+      var mt = document.getElementById("cart-modal-total");
+      if (mt) mt.textContent = totalStars + " ⭐";
+    }
+
+    function openCart() {
+      haptic("medium");
+      renderCartModal();
+      document.getElementById("cart-modal").style.display = "flex";
+    }
+
+    function closeCart() {
+      document.getElementById("cart-modal").style.display = "none";
+    }
+
+    function renderCartModal() {
+      var list = document.getElementById("cart-items-list");
+      if (!list) return;
+      if (cart.length === 0) {
+        list.innerHTML = '<div class="text-center py-8 text-slate-500 text-xs">Корзина пуста. Добавьте стикеры из каталога!</div>';
+        return;
+      }
+      var html = "";
+      for (var i = 0; i < cart.length; i++) {
+        var item = cart[i];
+        html += '<div class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between gap-3">'
+          + '<div class="flex items-center gap-2.5"><div class="w-10 h-10 rounded-lg bg-slate-950 flex items-center justify-center text-xl overflow-hidden">'
+          + '<span>' + (item.emoji || "🎁") + '</span></div>'
+          + '<div><div class="font-bold text-xs text-white">' + item.name + '</div>'
+          + '<div class="text-[11px] text-amber-400 font-mono">' + item.price + ' ⭐ / шт</div></div></div>'
+          + '<div class="flex items-center gap-2">'
+          + '<button onclick="changeCartQty(' + item.id + ', -1)" class="w-7 h-7 rounded-lg bg-slate-800 text-xs font-bold text-slate-300 cursor-pointer">-</button>'
+          + '<span class="font-bold font-mono text-xs text-white w-4 text-center">' + item.qty + '</span>'
+          + '<button onclick="changeCartQty(' + item.id + ', 1)" class="w-7 h-7 rounded-lg bg-purple-600 text-xs font-bold text-white cursor-pointer">+</button>'
+          + '</div></div>';
+      }
+      list.innerHTML = html;
+    }
+
+    function checkoutCartStars() {
+      haptic("heavy");
+      var totalStars = 0;
+      for (var i = 0; i < cart.length; i++) {
+        totalStars += cart[i].price * cart[i].qty;
+      }
+      alert("Счет на " + totalStars + " ⭐ (Telegram Stars) сформирован!");
+    }
+
+    var feedIdx = 0;
+    setInterval(function() {
+      feedIdx = (feedIdx + 1) % LIVE_WINS.length;
+      var w = LIVE_WINS[feedIdx];
+      var el = document.getElementById("live-feed-ticker");
+      if (el) el.innerHTML = '<span class="text-slate-300">' + w.user + '</span> <span class="' + w.color + '">' + w.prize + '</span>';
+    }, 4500);
+
+    function initApp() {
+      try {
+        drawWheelCanvas();
+        updateUI();
+        updateCartUI();
+        renderShop();
+      } catch (err) {
+        console.error("InitApp error:", err);
+      }
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initApp);
+    } else {
+      initApp();
+    }
+    window.addEventListener("load", initApp);
+    setTimeout(initApp, 50);
+    setTimeout(initApp, 200);
+    setTimeout(initApp, 600);
+  </script>
 </body>
 </html>
