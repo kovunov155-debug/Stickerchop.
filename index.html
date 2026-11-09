@@ -109,8 +109,11 @@
         <div id="bal-ton" class="text-xs font-black text-blue-400 font-mono mt-0.5">0.00</div>
         <div class="text-[9px] text-slate-400 font-bold uppercase">TON</div>
       </div>
-      <div class="bg-slate-900 border border-emerald-500/30 rounded-2xl p-2 shadow">
-        <div class="text-base">💵</div>
+      <div onclick="openDepositModal()" class="bg-slate-900 border border-emerald-500/40 hover:border-emerald-400 rounded-2xl p-2 shadow cursor-pointer transition active:scale-95 group">
+        <div class="text-base flex items-center justify-center gap-1">
+          <span>💵</span>
+          <span class="text-[9px] bg-emerald-500/20 text-emerald-300 font-bold px-1 rounded group-hover:bg-emerald-500/40">+</span>
+        </div>
         <div id="bal-usdt" class="text-xs font-black text-emerald-400 font-mono mt-0.5">0.00</div>
         <div class="text-[9px] text-slate-400 font-bold uppercase">USDT</div>
       </div>
@@ -128,6 +131,20 @@
 
     <!-- КОЛЕСО -->
     <div class="bg-gradient-to-b from-slate-900 via-purple-950/30 to-slate-950 border border-purple-500/30 rounded-3xl p-4 shadow-2xl relative flex flex-col items-center">
+      <!-- Переключатель режима игры -->
+      <div class="w-full flex items-center p-1 bg-slate-950/90 rounded-2xl border border-slate-800 mb-2.5 shadow-inner">
+        <button id="mode-btn-real" onclick="setPlayMode('real_money')" class="flex-1 py-2.5 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 shadow-lg shadow-emerald-500/25 ring-1 ring-emerald-300">
+          <span>💵</span>
+          <span>На реальные USDT</span>
+          <span id="mode-real-bal" class="text-[10px] bg-black/25 px-1.5 py-0.5 rounded-md font-mono font-bold text-slate-900">0.00$</span>
+        </button>
+        <button id="mode-btn-spins" onclick="setPlayMode('spins')" class="flex-1 py-2.5 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-slate-400 hover:text-white">
+          <span>🎰</span>
+          <span>Спины</span>
+          <span id="mode-spins-bal" class="text-[10px] bg-black/25 px-1.5 py-0.5 rounded-md font-mono font-bold text-slate-900">5</span>
+        </button>
+      </div>
+
       <!-- Стрелка-указатель сверху -->
       <div class="z-30 -mb-4 drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] pointer-events-none">
         <div class="w-8 h-8 bg-gradient-to-b from-amber-300 to-amber-500 rotate-45 rounded-sm border-2 border-white shadow-xl flex items-center justify-center">
@@ -149,8 +166,29 @@
         </button>
       </div>
 
-      <!-- Множитель -->
-      <div class="w-full flex items-center justify-between mt-3 pt-3 border-t border-slate-800 text-xs">
+      <!-- Блок ставок на реальные деньги -->
+      <div id="real-bet-section" class="w-full space-y-2 mt-3 pt-3 border-t border-slate-800 text-xs">
+        <div class="flex justify-between items-center">
+          <span class="text-emerald-400 font-bold text-[11px] flex items-center gap-1">
+            <span>💵</span>
+            <span>Ставка на реальные деньги:</span>
+          </span>
+          <span class="text-slate-400 text-[10px] font-mono">
+            Выигрыш до: <b id="real-max-win-label" class="text-amber-300 font-bold">12.50 USDT</b>
+          </span>
+        </div>
+        <div class="grid grid-cols-6 gap-1.5">
+          <button onclick="setRealBet(0.10)" id="btn-bet-010" class="py-1.5 rounded-xl font-mono font-black text-xs transition active:scale-95 cursor-pointer bg-slate-800 text-slate-300 hover:bg-slate-700">0.10$</button>
+          <button onclick="setRealBet(0.25)" id="btn-bet-025" class="py-1.5 rounded-xl font-mono font-black text-xs transition active:scale-95 cursor-pointer bg-slate-800 text-slate-300 hover:bg-slate-700">0.25$</button>
+          <button onclick="setRealBet(0.50)" id="btn-bet-050" class="py-1.5 rounded-xl font-mono font-black text-xs transition active:scale-95 cursor-pointer bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 shadow-md ring-2 ring-emerald-300 scale-105">0.50$</button>
+          <button onclick="setRealBet(1.00)" id="btn-bet-100" class="py-1.5 rounded-xl font-mono font-black text-xs transition active:scale-95 cursor-pointer bg-slate-800 text-slate-300 hover:bg-slate-700">1$</button>
+          <button onclick="setRealBet(2.50)" id="btn-bet-250" class="py-1.5 rounded-xl font-mono font-black text-xs transition active:scale-95 cursor-pointer bg-slate-800 text-slate-300 hover:bg-slate-700">2.5$</button>
+          <button onclick="setRealBet(5.00)" id="btn-bet-500" class="py-1.5 rounded-xl font-mono font-black text-xs transition active:scale-95 cursor-pointer bg-slate-800 text-slate-300 hover:bg-slate-700">5$</button>
+        </div>
+      </div>
+
+      <!-- Множитель спинов -->
+      <div id="spins-mult-section" class="w-full flex items-center justify-between mt-3 pt-3 border-t border-slate-800 text-xs" style="display: none;">
         <span class="text-slate-400 font-semibold text-[11px]">Множитель выигрыша:</span>
         <div class="flex gap-1.5">
           <button onclick="setMultiplier(1)" id="btn-mult-1" class="px-3 py-1 rounded-xl font-black text-xs bg-gradient-to-r from-amber-400 to-pink-500 text-slate-950 shadow-md cursor-pointer">x1</button>
@@ -160,10 +198,10 @@
       </div>
 
       <!-- Кнопка КРУТИТЬ -->
-      <button id="main-spin-btn" onclick="triggerSpinAction()" class="w-full mt-3.5 py-4 rounded-2xl font-black text-base shadow-2xl flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 hover:from-amber-300 hover:to-purple-500 text-slate-950 shadow-[0_8px_25px_rgba(236,72,153,0.4)] active:scale-98 transition cursor-pointer">
+      <button id="main-spin-btn" onclick="triggerSpinAction()" class="w-full mt-3.5 py-4 rounded-2xl font-black text-base shadow-2xl flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 hover:from-emerald-300 text-slate-950 shadow-[0_8px_25px_rgba(16,185,129,0.4)] active:scale-98 transition cursor-pointer">
         <span>🔥</span>
-        <span id="main-spin-label">КРУТИТЬ (1 спин)</span>
-        <span id="main-spins-left" class="text-xs bg-black/20 px-2 py-0.5 rounded-full text-slate-900">Осталось: 5</span>
+        <span id="main-spin-label">СТАВКА 0.50 USDT — КРУТИТЬ!</span>
+        <span id="main-spins-left" class="text-xs bg-black/20 px-2 py-0.5 rounded-full text-slate-900 font-mono">Баланс: 0.00$</span>
       </button>
     </div>
 
@@ -234,6 +272,60 @@
       <h2 id="win-modal-title" class="text-2xl font-black text-white mt-1">2.5 TON</h2>
       <p id="win-modal-desc" class="text-xs text-slate-400 mt-1">Награда начислена на ваш баланс.</p>
       <button onclick="closeWinModal()" class="mt-5 w-full bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 text-slate-950 font-black py-3.5 rounded-2xl shadow-xl active:scale-95 transition cursor-pointer">ЗАБРАТЬ ВЫИГРЫШ 💰</button>
+    </div>
+  </div>
+
+  <!-- Модалка 0: Пополнение баланса USDT -->
+  <div id="deposit-modal" class="modal-backdrop" onclick="handleDepositBackdrop(event)" style="display: none; align-items: center;">
+    <div class="modal-content border-2 border-emerald-500/80 rounded-3xl p-5 max-w-sm w-full space-y-4 shadow-2xl relative">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">💵</span>
+          <div>
+            <h2 class="font-black text-base text-white">Пополнить баланс USDT</h2>
+            <div class="text-[10px] text-emerald-400 font-semibold">Сеть: TON Blockchain (Tether USD)</div>
+          </div>
+        </div>
+        <button onclick="closeDepositModal()" class="text-2xl text-slate-400 hover:text-white leading-none p-1 cursor-pointer">&times;</button>
+      </div>
+
+      <div class="bg-emerald-950/40 border border-emerald-500/30 rounded-2xl p-3 text-center">
+        <div class="text-[11px] text-emerald-300 font-bold uppercase">Ваш текущий баланс:</div>
+        <div id="deposit-current-bal" class="text-2xl font-black text-white font-mono mt-0.5">0.00 USDT</div>
+      </div>
+
+      <div>
+        <label class="text-slate-400 text-xs font-semibold block mb-1.5">Выберите сумму депозита:</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="selectDepositPreset(1)" class="py-2 rounded-xl text-xs font-mono font-bold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 cursor-pointer">+1$ USDT</button>
+          <button onclick="selectDepositPreset(3)" class="py-2 rounded-xl text-xs font-mono font-bold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 cursor-pointer">+3$ USDT</button>
+          <button onclick="selectDepositPreset(5)" class="py-2 rounded-xl text-xs font-mono font-bold bg-emerald-500 text-slate-950 ring-2 ring-emerald-300 font-black cursor-pointer">+5$ USDT</button>
+          <button onclick="selectDepositPreset(10)" class="py-2 rounded-xl text-xs font-mono font-bold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 cursor-pointer">+10$ USDT</button>
+          <button onclick="selectDepositPreset(25)" class="py-2 rounded-xl text-xs font-mono font-bold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 cursor-pointer">+25$ USDT</button>
+          <button onclick="selectDepositPreset(50)" class="py-2 rounded-xl text-xs font-mono font-bold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 cursor-pointer">+50$ USDT</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="text-slate-400 text-xs font-semibold block mb-1">Или введите свою сумму (USDT):</label>
+        <input id="deposit-custom-input" type="number" step="0.1" min="0.5" value="5.00"
+          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white font-mono font-bold outline-none focus:border-emerald-500 transition" />
+      </div>
+
+      <button onclick="submitDepositOrder()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 text-slate-950 font-black py-3.5 rounded-xl shadow-xl active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer">
+        <span>💎</span>
+        <span id="deposit-action-label">Пополнить на 5.00 USDT ↗</span>
+      </button>
+
+      <div class="border-t border-slate-800 pt-3 text-[11px] space-y-1.5 text-slate-400">
+        <div class="flex justify-between items-center">
+          <span>Адрес кошелька получателя:</span>
+          <button onclick="copyWalletAddress()" class="text-emerald-400 font-bold hover:underline cursor-pointer">Копировать</button>
+        </div>
+        <div class="bg-slate-950 p-2 rounded-lg font-mono text-[10px] text-slate-400 break-all select-all border border-slate-800">
+          UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd
+        </div>
+      </div>
     </div>
   </div>
 
@@ -640,6 +732,129 @@
     var isSpinning = false;
     var wheelRotation = 0;
     var multiplier = 1;
+    var playMode = "real_money";
+    var realBet = 0.50;
+
+    function setPlayMode(mode) {
+      if (isSpinning) return;
+      haptic("light");
+      playMode = mode;
+      var btnReal = document.getElementById("mode-btn-real");
+      var btnSpins = document.getElementById("mode-btn-spins");
+      var realSec = document.getElementById("real-bet-section");
+      var spinsSec = document.getElementById("spins-mult-section");
+
+      if (mode === "real_money") {
+        if (btnReal) btnReal.className = "flex-1 py-2.5 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 shadow-lg shadow-emerald-500/25 ring-1 ring-emerald-300";
+        if (btnSpins) btnSpins.className = "flex-1 py-2.5 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-slate-400 hover:text-white";
+        if (realSec) realSec.style.display = "block";
+        if (spinsSec) spinsSec.style.display = "none";
+      } else {
+        if (btnReal) btnReal.className = "flex-1 py-2.5 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-slate-400 hover:text-white";
+        if (btnSpins) btnSpins.className = "flex-1 py-2.5 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 text-slate-950 shadow-lg shadow-pink-500/25 ring-1 ring-amber-300";
+        if (realSec) realSec.style.display = "none";
+        if (spinsSec) spinsSec.style.display = "flex";
+      }
+      updateUI();
+    }
+
+    function setRealBet(bet) {
+      if (isSpinning) return;
+      haptic("light");
+      realBet = bet;
+      var bets = [0.10, 0.25, 0.50, 1.00, 2.50, 5.00];
+      for (var i = 0; i < bets.length; i++) {
+        var b = bets[i];
+        var idStr = "btn-bet-" + (b === 0.1 ? "010" : b === 0.25 ? "025" : b === 0.5 ? "050" : b === 1 ? "100" : b === 2.5 ? "250" : "500");
+        var el = document.getElementById(idStr);
+        if (el) {
+          if (Math.abs(b - bet) < 0.001) {
+            el.className = "py-1.5 rounded-xl font-mono font-black text-xs transition active:scale-95 cursor-pointer bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 shadow-md ring-2 ring-emerald-300 scale-105";
+          } else {
+            el.className = "py-1.5 rounded-xl font-mono font-black text-xs transition active:scale-95 cursor-pointer bg-slate-800 text-slate-300 hover:bg-slate-700";
+          }
+        }
+      }
+      var maxLabel = document.getElementById("real-max-win-label");
+      if (maxLabel) maxLabel.textContent = (realBet * 25).toFixed(2) + " USDT";
+      updateUI();
+    }
+
+    function openDepositModal() {
+      haptic("medium");
+      var balEl = document.getElementById("deposit-current-bal");
+      if (balEl) balEl.textContent = game.usdt.toFixed(2) + " USDT";
+      var m = document.getElementById("deposit-modal");
+      if (m) m.style.display = "flex";
+    }
+
+    function closeDepositModal() {
+      var m = document.getElementById("deposit-modal");
+      if (m) m.style.display = "none";
+    }
+
+    function handleDepositBackdrop(e) {
+      if (e && e.target && e.target.id === "deposit-modal") {
+        closeDepositModal();
+      }
+    }
+
+    function selectDepositPreset(amt) {
+      haptic("light");
+      var inp = document.getElementById("deposit-custom-input");
+      if (inp) inp.value = Number(amt).toFixed(2);
+      var lbl = document.getElementById("deposit-action-label");
+      if (lbl) lbl.textContent = "Пополнить на " + Number(amt).toFixed(2) + " USDT ↗";
+    }
+
+    function submitDepositOrder() {
+      haptic("heavy");
+      var inp = document.getElementById("deposit-custom-input");
+      var amt = parseFloat(inp ? inp.value : "5");
+      if (isNaN(amt) || amt <= 0) {
+        alert("Введите корректную сумму для депозита!");
+        return;
+      }
+      closeDepositModal();
+
+      var tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : null;
+      var payload = {
+        type: "deposit",
+        amountUsdt: Number(amt.toFixed(2)),
+        totalUsdt: Number(amt.toFixed(2)),
+        userId: tgUser ? String(tgUser.id) : "guest_user",
+        username: tgUser && tgUser.username ? tgUser.username : "player"
+      };
+
+      fetch("/api/orders/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data && data.success && data.order) {
+          openOrderModal(data.order);
+        } else {
+          throw new Error("Invalid response");
+        }
+      })
+      .catch(function() {
+        var fallbackId = "DEP-" + Math.random().toString(36).substring(2, 7).toUpperCase();
+        var fallbackMemo = "DEP-" + Math.floor(100000 + Math.random() * 900000);
+        var fallbackOrder = {
+          id: fallbackId,
+          type: "deposit",
+          amountUsdt: Number(amt.toFixed(2)),
+          totalUsdt: Number(amt.toFixed(2)),
+          status: "pending",
+          memo: fallbackMemo,
+          recipientWallet: USDT_WALLET,
+          tonkeeperUrl: "https://app.tonkeeper.com/transfer/" + USDT_WALLET + "?text=" + encodeURIComponent(fallbackMemo)
+        };
+        openOrderModal(fallbackOrder);
+      });
+    }
 
     function setMultiplier(val) {
       if (isSpinning) return;
@@ -662,18 +877,32 @@
 
     function triggerSpinAction() {
       if (isSpinning) return;
-      if (game.spins < multiplier) {
-        haptic("medium");
-        openBuySpinsModal();
-        return;
-      }
 
-      haptic("heavy");
-      isSpinning = true;
-      game.spins -= multiplier;
-      game.totalSpinsDone++;
-      saveGame();
-      updateUI();
+      if (playMode === "real_money") {
+        if (game.usdt < realBet) {
+          haptic("medium");
+          openDepositModal();
+          return;
+        }
+        haptic("heavy");
+        isSpinning = true;
+        game.usdt = parseFloat(Math.max(0, game.usdt - realBet).toFixed(2));
+        game.totalSpinsDone++;
+        saveGame();
+        updateUI();
+      } else {
+        if (game.spins < multiplier) {
+          haptic("medium");
+          openBuySpinsModal();
+          return;
+        }
+        haptic("heavy");
+        isSpinning = true;
+        game.spins -= multiplier;
+        game.totalSpinsDone++;
+        saveGame();
+        updateUI();
+      }
 
       var weights = [18, 16, 16, 12, 14, 10, 10, 4];
       var totalWeight = 0;
@@ -706,21 +935,45 @@
         try {
           isSpinning = false;
           var prize = SECTORS[chosenIndex];
-          if (prize.type === "ton") game.ton += prize.amountTon * multiplier;
-          if (prize.type === "usdt") game.usdt += prize.amountUsdt * multiplier;
-          if (prize.type === "not") game.not += prize.amountNot * multiplier;
-          if (prize.type === "dogs") game.dogs += prize.amountDogs * multiplier;
-          if (prize.type === "spins") game.spins += prize.amountSpins * multiplier;
-          if (prize.type === "jackpot") {
-            game.ton += 10 * multiplier;
-            game.usdt += 25 * multiplier;
+
+          if (playMode === "real_money") {
+            if (prize.type === "ton") {
+              var tonWon = parseFloat(((prize.amountTon || 0.5) * (realBet / 0.5)).toFixed(3));
+              game.ton = parseFloat((game.ton + tonWon).toFixed(3));
+            } else if (prize.type === "usdt") {
+              var mult = prize.id === 6 ? 10 : 2;
+              var usdtWon = parseFloat((realBet * mult).toFixed(2));
+              game.usdt = parseFloat((game.usdt + usdtWon).toFixed(2));
+            } else if (prize.type === "jackpot") {
+              var jackUsdt = parseFloat((realBet * 25).toFixed(2));
+              game.usdt = parseFloat((game.usdt + jackUsdt).toFixed(2));
+              game.ton = parseFloat((game.ton + 5.0).toFixed(2));
+            } else if (prize.type === "spins") {
+              game.spins += 3;
+              game.usdt = parseFloat((game.usdt + realBet).toFixed(2));
+            } else if (prize.type === "not") {
+              game.not += Math.floor(1000 * (realBet / 0.5));
+            } else if (prize.type === "dogs") {
+              game.dogs += Math.floor(5000 * (realBet / 0.5));
+            }
+          } else {
+            if (prize.type === "ton") game.ton += prize.amountTon * multiplier;
+            if (prize.type === "usdt") game.usdt += prize.amountUsdt * multiplier;
+            if (prize.type === "not") game.not += prize.amountNot * multiplier;
+            if (prize.type === "dogs") game.dogs += prize.amountDogs * multiplier;
+            if (prize.type === "spins") game.spins += prize.amountSpins * multiplier;
+            if (prize.type === "jackpot") {
+              game.ton += 10 * multiplier;
+              game.usdt += 25 * multiplier;
+            }
           }
+
           saveGame();
           updateUI();
 
           try {
             if (typeof window.confetti === "function") {
-              window.confetti({ particleCount: prize.type === "jackpot" ? 120 : 60, spread: 70, origin: { y: 0.6 } });
+              window.confetti({ particleCount: prize.type === "jackpot" ? 140 : 70, spread: 75, origin: { y: 0.6 } });
             }
           } catch (e) {}
 
@@ -733,10 +986,26 @@
 
     function showWinModal(prize) {
       document.getElementById("win-modal-icon").textContent = prize.icon;
-      document.getElementById("win-modal-title").textContent = prize.label + (multiplier > 1 ? " (x" + multiplier + ")" : "");
-      document.getElementById("win-modal-desc").textContent = prize.type === "jackpot"
-        ? ("Начислено 10 TON + 25 USDT x" + multiplier + " на ваш баланс!")
-        : "Награда успешно начислена на ваш игровой баланс.";
+      var titleText = "";
+      var descText = "";
+
+      if (playMode === "real_money") {
+        if (prize.type === "jackpot") titleText = (realBet * 25).toFixed(2) + " USDT + 5 TON";
+        else if (prize.type === "usdt") titleText = (realBet * (prize.id === 6 ? 10 : 2)).toFixed(2) + " USDT";
+        else if (prize.type === "ton") titleText = ((prize.amountTon || 0.5) * (realBet / 0.5)).toFixed(2) + " TON";
+        else if (prize.type === "spins") titleText = "+3 Спина + " + realBet.toFixed(2) + "$";
+        else titleText = prize.label;
+
+        descText = "Выигрыш со ставки " + realBet.toFixed(2) + " USDT успешно зачислен на ваш баланс!";
+      } else {
+        titleText = prize.label + (multiplier > 1 ? " (x" + multiplier + ")" : "");
+        descText = prize.type === "jackpot"
+          ? ("Начислено 10 TON + 25 USDT x" + multiplier + " на ваш баланс!")
+          : "Награда успешно начислена на ваш игровой баланс.";
+      }
+
+      document.getElementById("win-modal-title").textContent = titleText;
+      document.getElementById("win-modal-desc").textContent = descText;
       document.getElementById("win-modal").style.display = "flex";
     }
 
@@ -801,18 +1070,37 @@
       document.getElementById("tab-spins-count").textContent = game.spins;
       document.getElementById("referral-val").textContent = game.referrals;
 
+      var realBalEl = document.getElementById("mode-real-bal");
+      if (realBalEl) realBalEl.textContent = game.usdt.toFixed(2) + "$";
+      var spinsBalEl = document.getElementById("mode-spins-bal");
+      if (spinsBalEl) spinsBalEl.textContent = game.spins;
+      var depBalEl = document.getElementById("deposit-current-bal");
+      if (depBalEl) depBalEl.textContent = game.usdt.toFixed(2) + " USDT";
+
       var label = document.getElementById("main-spin-label");
       var left = document.getElementById("main-spins-left");
       var mainBtn = document.getElementById("main-spin-btn");
 
-      if (game.spins >= multiplier) {
-        label.textContent = "КРУТИТЬ (" + multiplier + (multiplier === 1 ? " спин" : " спина") + ")";
-        left.textContent = "Осталось: " + game.spins;
-        mainBtn.className = "w-full mt-3.5 py-4 rounded-2xl font-black text-base shadow-2xl flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 hover:from-amber-300 hover:to-purple-500 text-slate-950 shadow-[0_8px_25px_rgba(236,72,153,0.4)] active:scale-98 transition cursor-pointer";
+      if (playMode === "real_money") {
+        if (game.usdt >= realBet) {
+          label.textContent = "СТАВКА " + realBet.toFixed(2) + " USDT — КРУТИТЬ!";
+          left.textContent = "Баланс: " + game.usdt.toFixed(2) + "$";
+          mainBtn.className = "w-full mt-3.5 py-4 rounded-2xl font-black text-base shadow-2xl flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 hover:from-emerald-300 text-slate-950 shadow-[0_8px_25px_rgba(16,185,129,0.4)] active:scale-98 transition cursor-pointer";
+        } else {
+          label.textContent = "Пополнить баланс (нужно " + realBet.toFixed(2) + " USDT)";
+          left.textContent = "Баланс: " + game.usdt.toFixed(2) + "$";
+          mainBtn.className = "w-full mt-3.5 py-4 rounded-2xl font-black text-base shadow-2xl flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 hover:from-amber-300 text-slate-950 shadow-[0_8px_25px_rgba(245,158,11,0.4)] active:scale-98 transition cursor-pointer";
+        }
       } else {
-        label.textContent = "Купить ещё спины 🔥";
-        left.textContent = "0 спинов";
-        mainBtn.className = "w-full mt-3.5 py-4 rounded-2xl font-black text-base shadow-2xl flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white active:scale-98 transition cursor-pointer";
+        if (game.spins >= multiplier) {
+          label.textContent = "КРУТИТЬ (" + multiplier + (multiplier === 1 ? " спин" : " спина") + ")";
+          left.textContent = "Осталось: " + game.spins;
+          mainBtn.className = "w-full mt-3.5 py-4 rounded-2xl font-black text-base shadow-2xl flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 hover:from-amber-300 hover:to-purple-500 text-slate-950 shadow-[0_8px_25px_rgba(236,72,153,0.4)] active:scale-98 transition cursor-pointer";
+        } else {
+          label.textContent = "Купить ещё спины 🔥";
+          left.textContent = "0 спинов";
+          mainBtn.className = "w-full mt-3.5 py-4 rounded-2xl font-black text-base shadow-2xl flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white active:scale-98 transition cursor-pointer";
+        }
       }
 
       document.getElementById("withdraw-ton-avail").textContent = "💎 " + game.ton.toFixed(2) + " TON";
@@ -1215,7 +1503,13 @@
 
     function finalizeVerifiedOrder() {
       haptic("heavy");
-      if (currentOrder && currentOrder.type === "spins") {
+      if (currentOrder && currentOrder.type === "deposit") {
+        var depAmt = parseFloat(Number(currentOrder.amountUsdt || currentOrder.totalUsdt || 5).toFixed(2));
+        game.usdt = parseFloat((game.usdt + depAmt).toFixed(2));
+        saveGame();
+        updateUI();
+        alert("Депозит " + depAmt.toFixed(2) + " USDT успешно подтвержден сервером!\nСредства зачислены на ваш баланс. Приятной игры! 💵");
+      } else if (currentOrder && currentOrder.type === "spins") {
         var totalSpins = 0;
         if (currentOrder.items && currentOrder.items.length) {
           for (var i = 0; i < currentOrder.items.length; i++) {
