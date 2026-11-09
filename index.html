@@ -70,6 +70,10 @@
         <span>🚀</span>
         <span>Старт</span>
       </button>
+      <button onclick="openAdminModal()" class="bg-amber-950/80 border border-amber-500/50 text-amber-300 px-2 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition cursor-pointer flex items-center gap-1 shadow" title="Панель управления / Настройки кошелька">
+        <span>⚙️</span>
+        <span>Админ</span>
+      </button>
       <button onclick="openWithdrawModal()" class="bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 px-2.5 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition cursor-pointer">💳 Вывод</button>
       <button onclick="openCart()" class="relative bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
         <span>🛒</span>
@@ -323,7 +327,7 @@
           <button onclick="copyWalletAddress()" class="text-emerald-400 font-bold hover:underline cursor-pointer">Копировать</button>
         </div>
         <div class="bg-slate-950 p-2 rounded-lg font-mono text-[10px] text-slate-400 break-all select-all border border-slate-800">
-          UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd
+          UQAIEqXYWzX1j-cgeyksUGVzC5T2fK2Ykv1mxCEDHw08uafd
         </div>
       </div>
     </div>
@@ -340,7 +344,7 @@
       <div class="border-t border-slate-800 pt-3 text-[11px] space-y-2">
         <div class="text-slate-400">Прямой перевод USDT (TON сеть):</div>
         <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 font-mono text-[10px] text-slate-300 break-all select-all flex justify-between items-center gap-2">
-          <span>UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd</span>
+          <span>UQAIEqXYWzX1j-cgeyksUGVzC5T2fK2Ykv1mxCEDHw08uafd</span>
           <button onclick="copyWalletAddress()" class="bg-purple-600 px-2 py-1 rounded text-white text-[10px] font-bold cursor-pointer">Копировать</button>
         </div>
         <button onclick="openTonkeeperPay()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 text-xs shadow transition active:scale-95 cursor-pointer">Оплатить в Tonkeeper ↗</button>
@@ -420,7 +424,7 @@
         <div>
           <div class="text-slate-400 text-[11px] mb-1 font-semibold">Адрес кошелька для перевода:</div>
           <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 font-mono text-[10px] text-slate-300 break-all select-all flex justify-between items-center gap-2">
-            <span id="order-wallet-address" class="truncate">UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd</span>
+            <span id="order-wallet-address" class="truncate">UQAIEqXYWzX1j-cgeyksUGVzC5T2fK2Ykv1mxCEDHw08uafd</span>
             <button onclick="copyWalletAddress()" class="bg-emerald-600 hover:bg-emerald-500 px-2 py-1 rounded text-white text-[10px] font-bold shrink-0 cursor-pointer">Копировать</button>
           </div>
         </div>
@@ -526,6 +530,121 @@
     </div>
   </div>
 
+  <!-- Панель управления / Настройки выплат (Админ-панель) -->
+  <div id="admin-modal" class="modal-backdrop">
+    <div class="modal-content space-y-4 border-2 border-amber-500/60 max-w-md">
+      <div class="flex items-start justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-xl shadow-lg">
+            ⚙️
+          </div>
+          <div>
+            <h3 class="font-black text-base text-amber-300">Панель управления</h3>
+            <p class="text-[11px] text-slate-400">Настройки выплат, финансов и интеграция кошельков</p>
+          </div>
+        </div>
+        <button onclick="closeAdminModal()" class="text-2xl text-slate-400 hover:text-white leading-none p-1 cursor-pointer">&times;</button>
+      </div>
+
+      <!-- Step-by-step Guide -->
+      <div class="bg-slate-950/80 border border-amber-500/30 rounded-2xl p-3 space-y-2 text-xs">
+        <div class="text-[11px] font-black text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
+          <span>📋</span>
+          <span>Инструкция по настройке выплат:</span>
+        </div>
+        <div class="space-y-1.5 text-slate-300 text-[11px]">
+          <div class="flex items-start gap-1.5">
+            <span class="font-bold text-amber-400">1.</span>
+            <span>Вы находитесь в панели управления в разделе настроек выплат и финансов.</span>
+          </div>
+          <div class="flex items-start gap-1.5">
+            <span class="font-bold text-amber-400">2.</span>
+            <span>Укажите ниже адрес вашего криптовалютного кошелька (USDT / TON).</span>
+          </div>
+          <div class="flex items-start gap-1.5">
+            <span class="font-bold text-amber-400">3.</span>
+            <span>Нажмите «Сохранить изменения». Настройки сохранятся на сервере и в боте.</span>
+          </div>
+          <div class="flex items-start gap-1.5">
+            <span class="font-bold text-amber-400">4.</span>
+            <span>Все средства от пользователей будут поступать на указанный адрес!</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success Notification Alert -->
+      <div id="admin-success-alert" class="hidden bg-emerald-950/90 border border-emerald-500/70 rounded-2xl p-3 text-emerald-200 text-xs flex items-start gap-2 shadow-lg">
+        <span class="text-base leading-none">✅</span>
+        <div class="leading-snug">
+          <b>Изменения успешно сохранены!</b>
+          <p class="text-[11px] text-emerald-300/90 mt-0.5">
+            Адрес кошелька обновлен на сервере. Средства от пользователей теперь поступают на:
+            <span id="admin-saved-address-label" class="font-mono block text-white mt-1 break-all bg-emerald-900/50 p-1 rounded border border-emerald-700/50"></span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Wallet Form -->
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1 flex items-center justify-between">
+            <span>Адрес кошелька для приема средств (TON / USDT):</span>
+            <span class="text-[10px] text-emerald-400 font-semibold bg-emerald-950/60 border border-emerald-500/40 px-1.5 py-0.5 rounded-full">
+              ● Активен
+            </span>
+          </label>
+          <input
+            id="admin-wallet-input"
+            type="text"
+            value="UQAIEqXYWzX1j-cgeyksUGVzC5T2fK2Ykv1mxCEDHw08uafd"
+            placeholder="UQAIEqXYWzX1j-cgeyksUGVzC5T2fK2Ykv1mxCEDHw08uafd"
+            class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 text-white font-mono text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-amber-400 transition"
+          />
+        </div>
+
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" onclick="copyAdminWalletInput()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold px-2.5 py-1.5 rounded-xl border border-slate-700 flex items-center gap-1 active:scale-95 transition cursor-pointer">
+            <span>📋</span>
+            <span>Копировать</span>
+          </button>
+          <button type="button" onclick="resetAdminWalletInput()" class="bg-purple-950/70 hover:bg-purple-900/90 text-purple-300 text-[11px] font-semibold px-2.5 py-1.5 rounded-xl border border-purple-500/40 flex items-center gap-1 active:scale-95 transition cursor-pointer">
+            <span>🔄</span>
+            <span>Вставить новый адрес</span>
+          </button>
+          <a id="admin-tonkeeper-preview-link" href="#" target="_blank" class="bg-blue-950/70 hover:bg-blue-900/90 text-blue-300 text-[11px] font-semibold px-2.5 py-1.5 rounded-xl border border-blue-500/40 flex items-center gap-1 active:scale-95 transition">
+            <span>🔗</span>
+            <span>Tonkeeper</span>
+          </a>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-[11px] text-slate-400 space-y-1">
+          <div class="flex justify-between">
+            <span>Блокчейн-сеть:</span>
+            <span class="font-bold text-slate-200">TON (The Open Network)</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Принимаемые активы:</span>
+            <span class="font-bold text-amber-300">USDT (Tether Jetton) + TON</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Маршрутизация платежей:</span>
+            <span class="font-bold text-emerald-400">Прямой смарт-контракт / Tonkeeper</span>
+          </div>
+        </div>
+
+        <button
+          id="btn-admin-save"
+          type="button"
+          onclick="saveAdminWalletAction()"
+          class="w-full bg-gradient-to-r from-amber-400 via-orange-500 to-pink-500 hover:from-amber-300 hover:to-pink-400 text-slate-950 font-black py-3 rounded-2xl shadow-xl shadow-amber-500/20 active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <span>💾</span>
+          <span>СОХРАНИТЬ ИЗМЕНЕНИЯ</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Плавающая кнопка О боте / Старт для мобильных -->
   <button id="floating-start-btn" onclick="openStartModal(event)" class="fixed bottom-3 right-3 z-30 bg-gradient-to-r from-amber-500 to-pink-600 text-slate-950 font-black text-xs px-3 py-2 rounded-2xl shadow-[0_4px_20px_rgba(245,158,11,0.5)] border border-amber-300/60 flex items-center gap-1.5 active:scale-95 transition cursor-pointer">
     <span>🚀</span>
@@ -546,9 +665,25 @@
       } catch (e) {}
     }
 
-    var USDT_WALLET = "UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd";
+    var savedAdminWallet = "";
+    try { savedAdminWallet = localStorage.getItem("stick_chop_admin_wallet"); } catch(e){}
+    var USDT_WALLET = (savedAdminWallet && savedAdminWallet.length >= 24) ? savedAdminWallet : "UQAIEqXYWzX1j-cgeyksUGVzC5T2fK2Ykv1mxCEDHw08uafd";
     var TONKEEPER_URL = "https://app.tonkeeper.com/transfer/" + USDT_WALLET;
     var BASE_IMG_URL = "https://kovunov155-debug.github.io/Stickerchop./";
+
+    // Sync from server
+    try {
+      fetch('/api/admin/wallet')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d && d.success && d.wallet) {
+            USDT_WALLET = d.wallet;
+            TONKEEPER_URL = "https://app.tonkeeper.com/transfer/" + USDT_WALLET;
+            try { localStorage.setItem("stick_chop_admin_wallet", d.wallet); } catch(e){}
+          }
+        })
+        .catch(function(){});
+    } catch(e){}
 
     var SECTORS = [
       { id: 0, label: "0.5 TON", sublabel: "TON Coin", type: "ton", amountTon: 0.5, icon: "💎", color: "#0284c7" },
@@ -1171,6 +1306,71 @@
       if (e && e.target && e.target.id === "start-modal") {
         closeStartModal(e);
       }
+    }
+
+    function openAdminModal() {
+      haptic("medium");
+      var input = document.getElementById("admin-wallet-input");
+      if (input) input.value = USDT_WALLET;
+      var alertBox = document.getElementById("admin-success-alert");
+      if (alertBox) alertBox.classList.add("hidden");
+      var link = document.getElementById("admin-tonkeeper-preview-link");
+      if (link) link.href = "https://app.tonkeeper.com/transfer/" + USDT_WALLET;
+      document.getElementById("admin-modal").style.display = "flex";
+    }
+
+    function closeAdminModal() {
+      document.getElementById("admin-modal").style.display = "none";
+    }
+
+    function copyAdminWalletInput() {
+      haptic("light");
+      var input = document.getElementById("admin-wallet-input");
+      if (input && input.value) {
+        navigator.clipboard?.writeText(input.value.trim());
+        alert("Адрес кошелька скопирован: " + input.value.trim());
+      }
+    }
+
+    function resetAdminWalletInput() {
+      haptic("light");
+      var input = document.getElementById("admin-wallet-input");
+      if (input) {
+        input.value = "UQAIEqXYWzX1j-cgeyksUGVzC5T2fK2Ykv1mxCEDHw08uafd";
+      }
+    }
+
+    function saveAdminWalletAction() {
+      haptic("heavy");
+      var input = document.getElementById("admin-wallet-input");
+      var clean = input ? input.value.trim() : "";
+      if (!clean || clean.length < 24) {
+        alert("Пожалуйста, введите корректный адрес кошелька в сети TON (минимум 24 символа).");
+        return;
+      }
+      USDT_WALLET = clean;
+      TONKEEPER_URL = "https://app.tonkeeper.com/transfer/" + USDT_WALLET;
+      try { localStorage.setItem("stick_chop_admin_wallet", clean); } catch (e) {}
+
+      var ordAddr = document.getElementById("order-wallet-address");
+      if (ordAddr) ordAddr.innerText = clean;
+      var previewLink = document.getElementById("admin-tonkeeper-preview-link");
+      if (previewLink) previewLink.href = "https://app.tonkeeper.com/transfer/" + clean;
+
+      fetch("/api/admin/wallet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet: clean })
+      }).catch(function(){});
+
+      var alertBox = document.getElementById("admin-success-alert");
+      var label = document.getElementById("admin-saved-address-label");
+      if (label) label.innerText = clean;
+      if (alertBox) {
+        alertBox.classList.remove("hidden");
+        setTimeout(function() { if (alertBox) alertBox.classList.add("hidden"); }, 5000);
+      }
+      alert("✅ Изменения успешно сохранены!\nАдрес кошелька обновлен: " + clean + "\nВсе платежи пользователей будут поступать на этот адрес.");
     }
 
     function openWithdrawModal() {

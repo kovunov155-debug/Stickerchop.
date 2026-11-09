@@ -7,7 +7,8 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-const USDT_WALLET = 'UQAiEqXWyX1j-cgeyksUGvZC5T2Fk2YkV1mxCEDH08wuafd';
+const DEFAULT_USDT_WALLET = 'UQAIEqXYWzX1j-cgeyksUGVzC5T2fK2Ykv1mxCEDHw08uafd';
+let activeWallet = DEFAULT_USDT_WALLET;
 
 app.use(express.json());
 
@@ -42,6 +43,7 @@ const orders = new Map<string, Order>();
 // Data file persistence
 const DATA_DIR = path.resolve('data');
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
+const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 
 try {
   if (!fs.existsSync(DATA_DIR)) {
@@ -51,6 +53,10 @@ try {
     const raw = fs.readFileSync(ORDERS_FILE, 'utf-8');
     const list: Order[] = JSON.parse(raw);
     list.forEach((ord) => orders.set(ord.id, ord));
+  }
+  if (fs.existsSync(CONFIG_FILE)) {
+    const cfg = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
+    if (cfg.usdtWallet) activeWallet = cfg.usdtWallet;
   }
 } catch (e) {
   console.warn('Orders persistence notice:', e);
@@ -64,13 +70,46 @@ function persistOrders() {
   }
 }
 
+function persistConfig() {
+  try {
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify({ usdtWallet: activeWallet, updatedAt: Date.now() }, null, 2));
+  } catch (e) {
+    console.error('Failed to save config.json:', e);
+  }
+}
+
+// Admin Panel Wallet Endpoints
+app.get('/api/admin/wallet', (req, res) => {
+  res.json({
+    success: true,
+    wallet: activeWallet,
+    network: 'TON Blockchain (The Open Network)',
+    currency: 'USDT (Tether USD Jetton)',
+    status: 'active',
+  });
+});
+
+app.post('/api/admin/wallet', (req, res) => {
+  const { wallet } = req.body;
+  if (wallet && typeof wallet === 'string' && wallet.trim().length >= 24) {
+    activeWallet = wallet.trim();
+    persistConfig();
+    return res.json({
+      success: true,
+      message: 'Адрес кошелька успешно сохранен в панели управления!',
+      wallet: activeWallet,
+    });
+  }
+  return res.status(400).json({ error: 'Некорректный адрес TON кошелька' });
+});
+
 // API Health Check
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     timestamp: Date.now(),
     ordersCount: orders.size,
-    usdtWallet: USDT_WALLET,
+    usdtWallet: activeWallet,
     network: 'TON (Tether USD)',
   });
 });
@@ -86,7 +125,7 @@ app.post('/api/orders/create', (req, res) => {
 
     const orderId = 'ORD-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Date.now().toString().slice(-4);
     const memo = orderId;
-    const tonkeeperUrl = `https://app.tonkeeper.com/transfer/${USDT_WALLET}?text=${encodeURIComponent(memo)}`;
+    const tonkeeperUrl = `https://app.tonkeeper.com/transfer/${activeWallet}?text=${encodeURIComponent(memo)}`;
 
     const order: any = {
       id: orderId,
@@ -98,7 +137,7 @@ app.post('/api/orders/create', (req, res) => {
       amountUsdt: finalAmount,
       currency: 'USDT',
       network: 'TON',
-      recipientWallet: USDT_WALLET,
+      recipientWallet: activeWallet,
       memo,
       tonkeeperUrl,
       userId: userId || user?.id,
@@ -117,7 +156,7 @@ app.post('/api/orders/create', (req, res) => {
         amount: order.totalUsdt,
         currency: 'USDT',
         network: 'TON (Tether USDT)',
-        wallet: USDT_WALLET,
+        wallet: activeWallet,
         memo,
         tonkeeperUrl,
         qrUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(tonkeeperUrl)}`,
@@ -199,7 +238,7 @@ async function startServer() {
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Сервер Crypto Spin запущен: http://0.0.0.0:${PORT}`);
-    console.log(`💳 Прием платежей в USDT: ${USDT_WALLET}`);
+    console.log(`💳 Прием платежей в USDT: ${activeWallet}`);
   });
 }
 
