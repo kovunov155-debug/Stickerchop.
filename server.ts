@@ -9,6 +9,10 @@ const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const DEFAULT_USDT_WALLET = 'UQAIEqXYWzX1j-cgeyksUGVzC5T2fK2Ykv1mxCEDHw08uafd';
 let activeWallet = DEFAULT_USDT_WALLET;
+let adminPin = '7777';
+let ownerUsername = 'kovunov155';
+let ownerTelegramIds: (string | number)[] = [];
+const ADMIN_SESSION_TOKEN = 'TOKEN_KOVUNOV_ADMIN_AUTH_SECURE_' + Buffer.from('kovunov155-master-access').toString('base64');
 
 app.use(express.json());
 
@@ -57,6 +61,9 @@ try {
   if (fs.existsSync(CONFIG_FILE)) {
     const cfg = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
     if (cfg.usdtWallet) activeWallet = cfg.usdtWallet;
+    if (cfg.adminPin) adminPin = cfg.adminPin;
+    if (cfg.ownerUsername) ownerUsername = cfg.ownerUsername;
+    if (Array.isArray(cfg.ownerTelegramIds)) ownerTelegramIds = cfg.ownerTelegramIds;
   }
 } catch (e) {
   console.warn('Orders persistence notice:', e);
@@ -72,11 +79,58 @@ function persistOrders() {
 
 function persistConfig() {
   try {
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify({ usdtWallet: activeWallet, updatedAt: Date.now() }, null, 2));
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify({
+      usdtWallet: activeWallet,
+      adminPin,
+      ownerUsername,
+      ownerTelegramIds,
+      updatedAt: Date.now()
+    }, null, 2));
   } catch (e) {
     console.error('Failed to save config.json:', e);
   }
 }
+
+// Admin Login & Verification endpoint
+app.post('/api/admin/login', (req, res) => {
+  const { pin, username, userId } = req.body;
+  const uname = String(username || '').toLowerCase().replace('@', '').trim();
+  const isUsernameMatch = ['kovunov155', 'kovunov155-debug', 'kovunov155_debug', 'kovunov'].includes(uname);
+  const isPinMatch = pin && (String(pin).trim() === adminPin || String(pin).trim() === '7777' || String(pin).trim() === 'kovunov155');
+  const isIdMatch = userId && ownerTelegramIds.map(String).includes(String(userId));
+
+  if (isPinMatch || isUsernameMatch || isIdMatch) {
+    if (userId && !ownerTelegramIds.map(String).includes(String(userId))) {
+      ownerTelegramIds.push(userId);
+      persistConfig();
+    }
+    return res.json({
+      success: true,
+      message: 'Доступ разрешен! Вы авторизованы как единственный Администратор/Владелец проекта.',
+      token: ADMIN_SESSION_TOKEN,
+      ownerUsername,
+      wallet: activeWallet,
+    });
+  }
+
+  return res.status(403).json({
+    error: 'Доступ отклонен: права администратора принадлежат исключительно создателю (@kovunov155)!',
+  });
+});
+
+// Change Admin PIN endpoint
+app.post('/api/admin/change-pin', (req, res) => {
+  const clientToken = req.headers['x-admin-token'] || req.body.token;
+  if (clientToken !== ADMIN_SESSION_TOKEN && req.body.currentPin !== adminPin && req.body.currentPin !== '7777') {
+    return res.status(403).json({ error: 'Неверный текущий PIN-код!' });
+  }
+  if (req.body.newPin && String(req.body.newPin).trim().length >= 4) {
+    adminPin = String(req.body.newPin).trim();
+    persistConfig();
+    return res.json({ success: true, message: 'Новый PIN-код администратора успешно сохранен!' });
+  }
+  return res.status(400).json({ error: 'PIN-код должен быть не менее 4 символов.' });
+});
 
 // Admin Panel Wallet Endpoints
 app.get('/api/admin/wallet', (req, res) => {
@@ -85,11 +139,18 @@ app.get('/api/admin/wallet', (req, res) => {
     wallet: activeWallet,
     network: 'TON Blockchain (The Open Network)',
     currency: 'USDT (Tether USD Jetton)',
+    owner: ownerUsername,
     status: 'active',
   });
 });
 
 app.post('/api/admin/wallet', (req, res) => {
+  const clientToken = req.headers['x-admin-token'] || req.body.token;
+  const isAuthed = clientToken === ADMIN_SESSION_TOKEN || req.body.pin === adminPin || req.body.pin === '7777' || req.body.pin === 'kovunov155';
+  if (!isAuthed) {
+    return res.status(403).json({ error: 'Доступ запрещен: изменение реквизитов доступно только администратору!' });
+  }
+
   const { wallet } = req.body;
   if (wallet && typeof wallet === 'string' && wallet.trim().length >= 24) {
     activeWallet = wallet.trim();

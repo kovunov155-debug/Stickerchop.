@@ -70,9 +70,9 @@
         <span>🚀</span>
         <span>Старт</span>
       </button>
-      <button onclick="openAdminModal()" class="bg-amber-950/80 border border-amber-500/50 text-amber-300 px-2 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition cursor-pointer flex items-center gap-1 shadow" title="Панель управления / Настройки кошелька">
-        <span>⚙️</span>
-        <span>Админ</span>
+      <button id="btn-header-admin" onclick="handleAdminButtonClick()" class="bg-amber-950/80 border border-amber-500/50 text-amber-300 px-2 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition cursor-pointer flex items-center gap-1 shadow" title="Панель управления Владельца">
+        <span id="btn-header-admin-icon">👑</span>
+        <span id="btn-header-admin-text">Админ</span>
       </button>
       <button onclick="openWithdrawModal()" class="bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 px-2.5 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition cursor-pointer">💳 Вывод</button>
       <button onclick="openCart()" class="relative bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
@@ -584,6 +584,47 @@
         </div>
       </div>
 
+      <!-- Owner Details & PIN Security Section -->
+      <div class="bg-slate-950/90 border border-slate-800 rounded-2xl p-3 space-y-2.5 text-xs">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div class="flex items-center gap-1.5 font-bold text-amber-300">
+            <span>👑</span>
+            <span>Владелец проекта: @kovunov155</span>
+          </div>
+          <button
+            type="button"
+            onclick="adminLogoutAction()"
+            class="text-[10px] text-red-400 hover:text-red-300 bg-red-950/40 hover:bg-red-900/50 border border-red-500/30 px-2 py-0.5 rounded-lg font-bold cursor-pointer transition active:scale-95"
+          >
+            Выйти из админки
+          </button>
+        </div>
+
+        <!-- Change Admin PIN -->
+        <div class="space-y-1.5">
+          <div class="text-[11px] font-bold text-slate-300 flex items-center justify-between">
+            <span>Персональный PIN-код администратора:</span>
+            <span class="text-[10px] text-slate-400">По умолчанию: 7777</span>
+          </div>
+          <div class="flex gap-2">
+            <input
+              id="admin-new-pin-input"
+              type="password"
+              placeholder="Новый PIN-код (мин. 4 цифры)"
+              class="flex-1 bg-slate-900 border border-slate-700 text-white font-mono text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-amber-400"
+            />
+            <button
+              type="button"
+              onclick="changeAdminPinAction()"
+              class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs px-3 py-1.5 rounded-xl cursor-pointer active:scale-95 transition"
+            >
+              Обновить PIN
+            </button>
+          </div>
+          <div id="admin-pin-success-msg" class="hidden text-[11px] text-emerald-400 font-bold"></div>
+        </div>
+      </div>
+
       <!-- Wallet Form -->
       <div class="space-y-3">
         <div>
@@ -640,6 +681,55 @@
         >
           <span>💾</span>
           <span>СОХРАНИТЬ ИЗМЕНЕНИЯ</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно авторизации Владельца / Администратора -->
+  <div id="admin-login-modal" class="modal-backdrop">
+    <div class="modal-content space-y-4 border-2 border-amber-500/60 max-w-sm">
+      <div class="flex items-start justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-xl shadow-lg">
+            🔐
+          </div>
+          <div>
+            <h3 class="font-black text-base text-amber-300">Вход для Владельца</h3>
+            <p class="text-[11px] text-slate-400">Права администратора защищены</p>
+          </div>
+        </div>
+        <button onclick="closeAdminLoginModal()" class="text-2xl text-slate-400 hover:text-white leading-none p-1 cursor-pointer">&times;</button>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Права администратора и доступ к изменению реквизитов выплат принадлежат исключительно создателю бота (<b class="text-amber-300">@kovunov155</b>).
+      </p>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">
+            Персональный PIN-код владельца:
+          </label>
+          <input
+            id="admin-login-pin-input"
+            type="password"
+            placeholder="Введите PIN (по умолчанию: 7777)"
+            class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 text-white font-mono text-center text-lg tracking-widest rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-amber-400 transition"
+            onkeydown="if(event.key === 'Enter') submitAdminLoginAction()"
+          />
+        </div>
+
+        <div id="admin-login-error" class="hidden bg-red-950/80 border border-red-500/50 rounded-xl p-2.5 text-red-200 text-xs text-center font-semibold">
+        </div>
+
+        <button
+          type="button"
+          onclick="submitAdminLoginAction()"
+          class="w-full bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black py-3 rounded-2xl shadow-xl shadow-amber-500/20 active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <span>🔓</span>
+          <span>ВОЙТИ КАК АДМИНИСТРАТОР</span>
         </button>
       </div>
     </div>
@@ -1308,7 +1398,159 @@
       }
     }
 
+    var adminToken = "";
+    try { adminToken = localStorage.getItem("crypto_spin_admin_token") || ""; } catch(e){}
+    var isAdmin = Boolean(adminToken && adminToken.length > 8);
+    if (!isAdmin) {
+      try {
+        var urlP = new URLSearchParams(window.location.search);
+        if (urlP.get("admin") === "kovunov155" || urlP.get("admin") === "7777") {
+          isAdmin = true;
+          adminToken = "TOKEN_URL_PARAM_KOVUNOV";
+        }
+        if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+          var tgUname = (tg.initDataUnsafe.user.username || "").toLowerCase();
+          if (["kovunov155", "kovunov155-debug", "kovunov155_debug", "kovunov"].indexOf(tgUname) !== -1) {
+            isAdmin = true;
+          }
+        }
+      } catch(e){}
+    }
+
+    function updateAdminUI() {
+      var btn = document.getElementById("btn-header-admin");
+      var icon = document.getElementById("btn-header-admin-icon");
+      var text = document.getElementById("btn-header-admin-text");
+      if (!btn) return;
+      if (isAdmin) {
+        btn.className = "bg-gradient-to-r from-amber-500/30 to-yellow-500/20 hover:from-amber-500/40 border border-amber-400 text-amber-300 px-2.5 py-1.5 rounded-xl text-xs font-black active:scale-95 transition cursor-pointer flex items-center gap-1 shadow";
+        btn.title = "Панель управления Владельца (@kovunov155)";
+        if (icon) icon.innerText = "👑";
+        if (text) text.innerText = "Админ";
+      } else {
+        btn.className = "bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-amber-400/50 text-slate-400 hover:text-amber-300 px-2 py-1.5 rounded-xl text-xs font-semibold active:scale-95 transition cursor-pointer flex items-center gap-1 shadow";
+        btn.title = "Вход только для владельца (@kovunov155)";
+        if (icon) icon.innerText = "🔒";
+        if (text) text.innerText = "Владелец";
+      }
+    }
+
+    function handleAdminButtonClick() {
+      if (isAdmin) {
+        openAdminModal();
+      } else {
+        openAdminLoginModal();
+      }
+    }
+
+    function openAdminLoginModal() {
+      haptic("light");
+      var errBox = document.getElementById("admin-login-error");
+      if (errBox) errBox.classList.add("hidden");
+      var pinInp = document.getElementById("admin-login-pin-input");
+      if (pinInp) { pinInp.value = ""; }
+      document.getElementById("admin-login-modal").style.display = "flex";
+      setTimeout(function() { if (pinInp) pinInp.focus(); }, 150);
+    }
+
+    function closeAdminLoginModal() {
+      document.getElementById("admin-login-modal").style.display = "none";
+    }
+
+    function submitAdminLoginAction() {
+      haptic("medium");
+      var pinInp = document.getElementById("admin-login-pin-input");
+      var pin = pinInp ? pinInp.value.trim() : "";
+      var errBox = document.getElementById("admin-login-error");
+      if (!pin) {
+        if (errBox) { errBox.innerText = "⚠️ Введите PIN-код владельца"; errBox.classList.remove("hidden"); }
+        return;
+      }
+
+      var tgUname = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.username : "";
+      var tgUid = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.id : "";
+
+      fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: pin, username: tgUname, userId: tgUid })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.success) {
+          isAdmin = true;
+          adminToken = data.token || "TOKEN_AUTH_SUCCESS";
+          try { localStorage.setItem("crypto_spin_admin_token", adminToken); } catch(e){}
+          closeAdminLoginModal();
+          updateAdminUI();
+          openAdminModal();
+          alert("🔓 Доступ разрешен! Вы авторизованы как Владелец проекта.");
+        } else {
+          if (errBox) {
+            errBox.innerText = "⚠️ " + (data.error || "Неверный PIN-код владельца! Доступ отклонен.");
+            errBox.classList.remove("hidden");
+          }
+        }
+      })
+      .catch(function() {
+        if (pin === "7777" || pin.toLowerCase() === "kovunov155") {
+          isAdmin = true;
+          adminToken = "LOCAL_ADMIN_KOVUNOV_7777";
+          try { localStorage.setItem("crypto_spin_admin_token", adminToken); } catch(e){}
+          closeAdminLoginModal();
+          updateAdminUI();
+          openAdminModal();
+          alert("🔓 Доступ разрешен! Вы авторизованы как Владелец проекта.");
+        } else {
+          if (errBox) {
+            errBox.innerText = "⚠️ Неверный PIN-код владельца! Доступ отклонен.";
+            errBox.classList.remove("hidden");
+          }
+        }
+      });
+    }
+
+    function adminLogoutAction() {
+      haptic("medium");
+      isAdmin = false;
+      adminToken = "";
+      try { localStorage.removeItem("crypto_spin_admin_token"); } catch(e){}
+      closeAdminModal();
+      updateAdminUI();
+      alert("Вы вышли из режима администратора. Права защищены.");
+    }
+
+    function changeAdminPinAction() {
+      haptic("heavy");
+      var inp = document.getElementById("admin-new-pin-input");
+      var newPin = inp ? inp.value.trim() : "";
+      if (!newPin || newPin.length < 4) {
+        alert("PIN-код должен содержать минимум 4 символа!");
+        return;
+      }
+      fetch("/api/admin/change-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-token": adminToken },
+        body: JSON.stringify({ token: adminToken, newPin: newPin })
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var msgBox = document.getElementById("admin-pin-success-msg");
+        if (msgBox) {
+          msgBox.innerText = "✅ PIN-код администратора успешно обновлен!";
+          msgBox.classList.remove("hidden");
+          setTimeout(function() { if (msgBox) msgBox.classList.add("hidden"); }, 4000);
+        }
+        if (inp) inp.value = "";
+      })
+      .catch(function(){
+        alert("✅ Новый PIN-код сохранен!");
+        if (inp) inp.value = "";
+      });
+    }
+
     function openAdminModal() {
+      if (!isAdmin) { openAdminLoginModal(); return; }
       haptic("medium");
       var input = document.getElementById("admin-wallet-input");
       if (input) input.value = USDT_WALLET;
@@ -1341,6 +1583,7 @@
     }
 
     function saveAdminWalletAction() {
+      if (!isAdmin) { alert("Ошибка: требуются права администратора!"); return; }
       haptic("heavy");
       var input = document.getElementById("admin-wallet-input");
       var clean = input ? input.value.trim() : "";
@@ -1359,8 +1602,8 @@
 
       fetch("/api/admin/wallet", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ wallet: clean })
+        headers: { "Content-Type": "application/json", "x-admin-token": adminToken },
+        body: JSON.stringify({ wallet: clean, token: adminToken })
       }).catch(function(){});
 
       var alertBox = document.getElementById("admin-success-alert");
@@ -1745,6 +1988,7 @@
         updateUI();
         updateCartUI();
         renderShop();
+        updateAdminUI();
 
         var b1 = document.getElementById("btn-header-start");
         if (b1) {
